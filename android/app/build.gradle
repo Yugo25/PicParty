@@ -1,0 +1,4 @@
+plugins { id 'com.android.application'; id 'org.jetbrains.kotlin.android' }
+android { namespace 'com.picparty.app'; compileSdk 35
+ defaultConfig { applicationId 'com.picparty.app'; minSdk 23; targetSdk 35; versionCode 10; versionName '1.0.0' }
+}

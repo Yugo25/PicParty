@@ -1,0 +1,1 @@
+-- Party invite tables/RPCs are consolidated in 000_core.sql.

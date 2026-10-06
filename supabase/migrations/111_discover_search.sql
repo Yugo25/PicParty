@@ -1,0 +1,1 @@
+-- Discover/search RPCs are consolidated in 000_core.sql.

@@ -1,0 +1,1 @@
+class Conversation { final String id,userAId,userBId; final DateTime updatedAt; const Conversation({required this.id,required this.userAId,required this.userBId,required this.updatedAt}); factory Conversation.fromMap(Map<String,dynamic>m)=>Conversation(id:m['id'],userAId:m['user_a_id'],userBId:m['user_b_id'],updatedAt:DateTime.parse(m['updated_at']).toUtc());}

@@ -1,0 +1,2 @@
+-- Moderation UI/RPCs are consolidated in 000_core.sql.
+-- Production admin review workflows should be implemented as a server-only role.

@@ -1,0 +1,2 @@
+-- Share URLs use https://picparty.app/p/{partyId}.
+-- Native Universal Links / Android App Links must be configured with the final production domain.

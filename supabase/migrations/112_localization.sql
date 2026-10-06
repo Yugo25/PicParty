@@ -1,0 +1,1 @@
+-- Translation tables are consolidated in 000_core.sql.

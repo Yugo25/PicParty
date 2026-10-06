@@ -1,0 +1,3 @@
+import 'package:shared_preferences/shared_preferences.dart';
+class PreferencesService { PreferencesService._(); static final instance=PreferencesService._(); late SharedPreferences _p; Future<void> init() async {_p=await SharedPreferences.getInstance();} ThemePrefs get theme=>ThemePrefs(_p);}
+class ThemePrefs { final SharedPreferences p; ThemePrefs(this.p); bool get followSystem=>p.getBool('follow_system')??true; Future<void>setFollowSystem(bool v)=>p.setBool('follow_system',v); String get language=>p.getString('language')??'system'; Future<void>setLanguage(String v)=>p.setString('language',v); int get seed=>p.getInt('seed')??0x6750A4; Future<void>setSeed(int v)=>p.setInt('seed',v);}

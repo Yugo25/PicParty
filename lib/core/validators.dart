@@ -1,0 +1,1 @@
+class Validators { static String? requiredText(String? v,{int max=80}){final s=v?.trim()??'';if(s.isEmpty)return 'Required';if(s.length>max)return 'Maximum $max characters';return null;} static String? password(String? v)=>v!=null&&v.length>=8?null:'Password must be at least 8 characters'; }
