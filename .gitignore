@@ -19,3 +19,6 @@ ios/Flutter/ephemeral/
 ios/Runner/GeneratedPluginRegistrant.*
 lib/l10n/app_localizations*.dart
 .DS_Store
+
+# Gradle build cache (machine-specific)
+android/.gradle/
