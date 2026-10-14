@@ -1,2 +1,54 @@
-import 'package:go_router/go_router.dart';import 'package:flutter/material.dart';import '../../services/demo_store.dart';import '../../widgets/party_card.dart';
-class HomeScreen extends StatefulWidget{const HomeScreen({super.key});@override State<HomeScreen>createState()=>_HomeScreenState();}class _HomeScreenState extends State<HomeScreen>{final s=DemoStore.instance;@override void initState(){super.initState();s.init();s.addListener(_changed);}@override void dispose(){s.removeListener(_changed);super.dispose();}void _changed(){if(mounted)setState((){});}@override Widget build(BuildContext c)=>SafeArea(child:CustomScrollView(slivers:[SliverAppBar(title:const Text('图趴 PicParty'),floating:true,actions:[IconButton(onPressed:()=>GoRouter.of(c).push('/search'),icon:const Icon(Icons.search))]),SliverPadding(padding:const EdgeInsets.all(16),sliver:SliverList(delegate:SliverChildBuilderDelegate((_,i)=>Padding(padding:const EdgeInsets.only(bottom:12),child:PartyCard(party:s.parties[i],onTap:()=>GoRouter.of(c).push('/party/${s.parties[i].id}'))),childCount:s.parties.length)))]));}
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../services/feed/active_party_controller.dart';
+import '../../services/mock_feed_repository.dart';
+import '../../widgets/feed/feed_header.dart';
+import '../../widgets/feed/party_feed_list.dart';
+
+/// Home: header with tabs, then the vertical feed of photo-backed Party timers.
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  FeedTab _tab = FeedTab.forYou;
+
+  // One controller per tab's list, so the two lists never share keys.
+  late ActivePartyController _feed = ActivePartyController();
+
+  @override
+  void dispose() {
+    _feed.dispose();
+    super.dispose();
+  }
+
+  void _selectTab(FeedTab tab) {
+    if (tab == _tab) return;
+    final old = _feed;
+    setState(() {
+      _tab = tab;
+      _feed = ActivePartyController();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      bottom: false,
+      child: Column(
+        children: [
+          FeedHeader(
+            tab: _tab,
+            onTab: _selectTab,
+            onSearch: () => _feed.suspendWhile(context.push('/search')),
+            onNotifications: () => _feed.suspendWhile(context.push('/notifications')),
+          ),
+          Expanded(child: PartyFeedList(key: ValueKey(_tab), tab: _tab, feed: _feed)),
+        ],
+      ),
+    );
+  }
+}
