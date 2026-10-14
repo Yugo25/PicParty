@@ -3,13 +3,18 @@ import 'package:image_picker/image_picker.dart';
 import '../../config/feed_config.dart';
 import '../../models/countdown.dart';
 import '../../models/feed/feed_party.dart';
+import '../../models/feed/party_options.dart';
 import '../../services/mock_feed_repository.dart';
 import '../../widgets/countdown/countdown_style.dart';
 import '../../widgets/countdown/phase_builder.dart';
 import '../../widgets/countdown/photo_countdown_overlay.dart';
 import '../../widgets/feed/feed_media_view.dart';
+import '../../widgets/common/state_views.dart';
 import '../../widgets/feed/party_menu_sheet.dart';
+import '../../widgets/party/party_grid_card.dart';
+import '../../widgets/party/party_image.dart';
 import '../media_detail/post_viewer_screen.dart';
+import '../../widgets/common/app_back_button.dart';
 
 /// "View Party": the Party's timer, upload button and all of its posts.
 /// Posts stay viewable after the deadline; uploads are only possible while live.
@@ -56,13 +61,21 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
   @override
   Widget build(BuildContext context) {
     final party = _repo.party(widget.partyId);
-    if (party == null) return Scaffold(appBar: AppBar(), body: const Center(child: Text('Party no longer available')));
+    if (party == null) {
+      return Scaffold(
+        appBar: AppBar(leading: const AppBackButton()),
+        body: const Center(child: EmptyState(icon: Icons.event_busy_outlined, title: 'Party not found', message: 'It may have been removed.')),
+      );
+    }
+    // Private Parties need membership; having the link is not enough.
+    if (!_repo.canView(party)) return const _PrivatePartyScreen();
     final theme = Theme.of(context);
     final width = MediaQuery.sizeOf(context).width;
     final thumbPx = requestPixelSize(context, Size.square(width / 3));
 
     return Scaffold(
       appBar: AppBar(
+        leading: const AppBackButton(),
         title: Text(party.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
         actions: [IconButton(onPressed: () => copyPartyLink(context, party), icon: const Icon(Icons.ios_share), tooltip: 'Copy link')],
       ),
@@ -72,14 +85,14 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
             child: AspectRatio(
               aspectRatio: FeedConfig.mediaAspectRatio,
               child: Stack(fit: StackFit.expand, children: [
-                if (party.posts.isNotEmpty) FeedMediaView(post: party.posts.first),
+                party.posts.isNotEmpty ? FeedMediaView(post: party.posts.first) : PartyImage(party: party, coverOnly: true),
                 const DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                         begin: Alignment.topCenter, end: Alignment.bottomCenter, stops: [0.45, 1], colors: [Color(0x00000000), Color(0x8C000000)]),
                   ),
                 ),
-                PhotoCountdownOverlay(startAt: party.startAt, endAt: party.endAt, style: CountdownStyle.compact),
+                PhotoCountdownOverlay(startAt: party.startAt, endAt: party.endAt, style: CountdownStyle.compact, timerStyle: party.timerStyle),
               ]),
             ),
           ),
@@ -89,8 +102,22 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('${party.contributorCount} contributors · ${party.posts.length} posts',
-                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                  PhaseBuilder(
+                    startAt: party.startAt,
+                    endAt: party.endAt,
+                    builder: (context, phase) => Text(
+                      [
+                        PartyAudienceText.label(party, phase),
+                        '${party.posts.length} ${party.posts.length == 1 ? 'post' : 'posts'}',
+                        if (party.privacy != PartyPrivacy.public) party.privacy.label,
+                      ].join(' · '),
+                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                  ),
+                  if (party.description?.isNotEmpty == true) ...[
+                    const SizedBox(height: 8),
+                    Text(party.description!, style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15)),
+                  ],
                   const SizedBox(height: 12),
                   PhaseBuilder(
                     startAt: party.startAt,
@@ -105,6 +132,10 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
               ),
             ),
           ),
+          if (party.posts.isEmpty)
+            const SliverToBoxAdapter(
+              child: EmptyState(icon: Icons.photo_library_outlined, title: 'No posts yet', message: 'The cover is shown until the first contribution.'),
+            ),
           SliverGrid.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 2, crossAxisSpacing: 2),
             itemCount: party.posts.length,
@@ -151,4 +182,21 @@ class _UploadButton extends StatelessWidget {
         FilledButton.icon(style: style, onPressed: null, icon: const Icon(Icons.lock_outline), label: const Text('Uploads closed')),
     };
   }
+}
+
+/// Shown instead of a private Party to people who are not members.
+class _PrivatePartyScreen extends StatelessWidget {
+  const _PrivatePartyScreen();
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(leading: const AppBackButton()),
+        body: const Center(
+          child: EmptyState(
+            icon: Icons.lock_outline,
+            title: 'This Party is private',
+            message: 'Only approved members can see it. Ask the host for an invite — invites appear in Inbox › Activity.',
+          ),
+        ),
+      );
 }

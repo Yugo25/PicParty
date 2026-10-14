@@ -20,21 +20,33 @@ class PostCaption extends StatelessWidget {
             height: 22,
             child: Text(post.caption ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15)),
           ),
-          InkWell(
-            onTap: onViewParty,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 40),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('View Party', style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15, fontWeight: FontWeight.w500)),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.chevron_right, size: 20),
-                ],
-              ),
-            ),
-          ),
+          ViewPartyLink(onTap: onViewParty),
         ],
+      ),
+    );
+  }
+}
+
+/// "View Party >" text link with a 40 px tall tap area.
+class ViewPartyLink extends StatelessWidget {
+  final VoidCallback onTap;
+  const ViewPartyLink({super.key, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 40),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('View Party', style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15, fontWeight: FontWeight.w500)),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right, size: 20),
+          ],
+        ),
       ),
     );
   }

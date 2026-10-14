@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/feed/feed_party.dart';
-import '../../models/feed/feed_post.dart';
-import 'feed_media_view.dart';
+import '../party/party_grid_card.dart';
+import '../party/party_image.dart';
 
 /// Thumbnail, Party name, contributor count and the menu button.
 class PartyHeaderRow extends StatelessWidget {
@@ -22,7 +22,7 @@ class PartyHeaderRow extends StatelessWidget {
               onTap: onOpenParty,
               child: Row(
                 children: [
-                  PartyThumbnail(url: party.thumbnailUrl, size: 44),
+                  PartyThumbnail(party: party, size: 44),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -33,8 +33,7 @@ class PartyHeaderRow extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, fontSize: 16)),
                         const SizedBox(height: 1),
-                        Text('${party.contributorCount} ${party.contributorCount == 1 ? 'contributor' : 'contributors'}',
-                            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant, fontSize: 13)),
+                        PartyAudienceText(party: party),
                       ],
                     ),
                   ),
@@ -51,25 +50,13 @@ class PartyHeaderRow extends StatelessWidget {
 
 /// Small square Party thumbnail with slightly rounded corners.
 class PartyThumbnail extends StatelessWidget {
-  final SizedImageUrl url;
+  final FeedParty party;
   final double size;
-  const PartyThumbnail({super.key, required this.url, required this.size});
+  const PartyThumbnail({super.key, required this.party, required this.size});
 
   @override
-  Widget build(BuildContext context) {
-    final px = requestPixelSize(context, Size.square(size));
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(6),
-      child: SizedBox.square(
-        dimension: size,
-        child: Image.network(
-          url(px.width.toInt(), px.height.toInt()),
-          fit: BoxFit.cover,
-          cacheWidth: px.width.toInt(),
-          frameBuilder: (context, child, frame, wasSync) => wasSync || frame != null ? child : const MediaPlaceholder(),
-          errorBuilder: (context, error, stack) => const MediaPlaceholder(),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: SizedBox.square(dimension: size, child: PartyImage(party: party)),
+      );
 }

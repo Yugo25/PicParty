@@ -7,6 +7,7 @@ import 'services/preferences_service.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_controller.dart';
 import 'routing/app_router.dart';
+import 'widgets/common/mobile_frame.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +29,7 @@ class PicPartyApp extends StatelessWidget {
       localizationsDelegates: const [GlobalMaterialLocalizations.delegate, GlobalWidgetsLocalizations.delegate, GlobalCupertinoLocalizations.delegate],
       supportedLocales: const [Locale('en'), Locale('fr'), Locale('ja'), Locale('ko'), Locale('es'), Locale.fromSubtags(languageCode:'zh',scriptCode:'Hans'), Locale.fromSubtags(languageCode:'zh',scriptCode:'Hant')],
       routerConfig: AppRouter.router,
+      builder: (context, child) => MobileFrame(child: child!),
     ),
   );
 }

@@ -52,6 +52,32 @@ class CountdownSnapshot {
     return phase == CountdownPhase.closed ? 'Ended $when' : when;
   }
 
+  /// Short form for cards: `01:59:34`, or `1d 06h` when a day or more is left.
+  static String formatCompact(Duration d) {
+    final s = d.isNegative ? 0 : d.inSeconds;
+    final days = s ~/ 86400, h = (s % 86400) ~/ 3600, m = (s % 3600) ~/ 60, sec = s % 60;
+    String two(int v) => v.toString().padLeft(2, '0');
+    return days > 0 ? '${days}d ${two(h)}h' : '${two(h)}:${two(m)}:${two(sec)}';
+  }
+
+  /// Minimal timer style: the two largest units, dropping a zero second unit —
+  /// `2d 6h`, `6h`, `5h 59m`, `42m`, `35s`.
+  static String formatMinimal(Duration d) {
+    final s = d.isNegative ? 0 : d.inSeconds;
+    final days = s ~/ 86400, h = (s % 86400) ~/ 3600, m = (s % 3600) ~/ 60, sec = s % 60;
+    if (days > 0) return h > 0 ? '${days}d ${h}h' : '${days}d';
+    if (h > 0) return m > 0 ? '${h}h ${m}m' : '${h}h';
+    if (m > 0) return '${m}m';
+    return '${sec}s';
+  }
+
+  /// Share of the Party still to run, 1 → 0. Full before the start, empty once closed.
+  static double fractionLeft({required DateTime start, required DateTime end, required DateTime now}) {
+    final total = end.difference(start).inMilliseconds;
+    if (total <= 0 || !now.isAfter(start)) return now.isBefore(end) ? 1 : 0;
+    return (end.difference(now).inMilliseconds / total).clamp(0.0, 1.0);
+  }
+
   static String formatMoment(DateTime moment, DateTime now) {
     final t = moment.toLocal(), n = now.toLocal();
     final day = DateTime(t.year, t.month, t.day), today = DateTime(n.year, n.month, n.day);

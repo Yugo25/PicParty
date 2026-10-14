@@ -172,7 +172,7 @@ class _PartyMediaCarouselState extends State<PartyMediaCarousel> {
               ),
             ),
             // 3. Party timer — same position and deadline for every post.
-            PhotoCountdownOverlay(startAt: party.startAt, endAt: party.endAt, style: widget.countdownStyle),
+            PhotoCountdownOverlay(startAt: party.startAt, endAt: party.endAt, style: widget.countdownStyle, timerStyle: party.timerStyle),
             // 4. Post number.
             Positioned(
               top: 12,

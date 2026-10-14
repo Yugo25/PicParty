@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/mock_feed_repository.dart';
+import '../common/underline_tabs.dart';
 
 /// Wordmark, search and notifications, then the For you / Following tabs.
 ///
@@ -34,50 +35,14 @@ class FeedHeader extends StatelessWidget {
             ],
           ),
         ),
-        Row(
-          children: [
-            for (final t in FeedTab.values)
-              Expanded(child: _Tab(label: t == FeedTab.forYou ? 'For you' : 'Following', selected: t == tab, onTap: () => onTab(t))),
-          ],
-        ),
-        const Divider(),
-      ],
-    );
-  }
-}
-
-class _Tab extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  const _Tab({required this.label, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Semantics(
-      selected: selected,
-      button: true,
-      child: InkWell(
-        onTap: onTap,
-        child: SizedBox(
+        UnderlineTabs<FeedTab>(
+          values: FeedTab.values,
+          selected: tab,
+          labelOf: (t) => t == FeedTab.forYou ? 'For you' : 'Following',
+          onSelected: onTab,
           height: 42,
-          child: Stack(
-            children: [
-              Center(
-                child: Text(label,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                      color: selected ? scheme.onSurface : scheme.onSurfaceVariant,
-                    )),
-              ),
-              if (selected)
-                Positioned(left: 16, right: 16, bottom: 0, child: Container(height: 2, color: scheme.onSurface)),
-            ],
-          ),
         ),
-      ),
+      ],
     );
   }
 }
