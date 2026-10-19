@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/l10n.dart';
 
 /// Short, centred message for an empty list.
 class EmptyState extends StatelessWidget {
@@ -39,24 +40,24 @@ class LoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: EdgeInsets.all(padding),
-        child: const Center(
-          child: SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2, semanticsLabel: 'Loading')),
+        child: Center(
+          child: SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2, semanticsLabel: context.l10n.loading)),
         ),
       );
 }
 
 /// A failed load, with a retry button.
 class ErrorState extends StatelessWidget {
-  final String message;
+  final String? message;
   final VoidCallback onRetry;
-  const ErrorState({super.key, this.message = 'Couldn\'t load this. Check your connection.', required this.onRetry});
+  const ErrorState({super.key, this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) => EmptyState(
         icon: Icons.cloud_off_outlined,
-        title: 'Something went wrong',
-        message: message,
-        action: OutlinedButton(onPressed: onRetry, child: const Text('Try again')),
+        title: context.l10n.somethingWentWrong,
+        message: message ?? context.l10n.loadFailedDefault,
+        action: OutlinedButton(onPressed: onRetry, child: Text(context.l10n.tryAgain)),
       );
 }
 
@@ -71,7 +72,7 @@ class PagingFooter extends StatelessWidget {
     if (failed) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: TextButton(onPressed: onRetry, child: const Text('Couldn\'t load more. Retry'))),
+        child: Center(child: TextButton(onPressed: onRetry, child: Text(context.l10n.loadMoreFailed))),
       );
     }
     if (loading) return const LoadingState(padding: 20);

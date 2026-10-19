@@ -10,6 +10,7 @@ import '../../widgets/common/state_views.dart';
 import '../../widgets/feed/author_avatar.dart';
 import '../../widgets/feed/party_header_row.dart';
 import '../../widgets/common/app_back_button.dart';
+import '../../l10n/l10n.dart';
 
 /// One-to-one conversation: history and a message box that stays above the
 /// keyboard. In demo mode, sent messages are clearly marked as not delivered.
@@ -61,7 +62,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _input.clear();
       if (mounted) setState(() => _messages = [...?_messages, m]);
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Couldn\'t send. Your message is still in the box.')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.chatSendFailed)));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -83,7 +84,7 @@ class _ChatScreenState extends State<ChatScreen> {
         leading: const AppBackButton(),
         titleSpacing: 0,
         title: other == null
-            ? const Text('Chat')
+            ? Text(context.l10n.chat)
             : InkWell(
                 onTap: () => context.push('/u/${other.id}'),
                 child: Row(children: [
@@ -105,7 +106,7 @@ class _ChatScreenState extends State<ChatScreen> {
             width: double.infinity,
             color: scheme.surfaceContainer,
             padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter, vertical: 8),
-            child: Text('Demo chat — messages you send stay on this device and aren\'t delivered.',
+            child: Text(context.l10n.chatDemoNotice,
                 style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant)),
           ),
         Expanded(
@@ -120,7 +121,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       children: [
                         for (final m in messages.reversed) _Bubble(message: m, mine: _isMine(m)),
                         if (messages.isEmpty)
-                          EmptyState(icon: Icons.waving_hand_outlined, title: 'Say hello', message: other == null ? null : 'This is the start of your chat with ${other.name}.'),
+                          EmptyState(icon: Icons.waving_hand_outlined, title: context.l10n.sayHello, message: other == null ? null : context.l10n.chatStart(other.name)),
                         if (party != null)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16),
@@ -139,7 +140,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   Expanded(
                                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                       Text(party.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                      Text('Shared Party', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                                      Text(context.l10n.sharedParty, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
                                     ]),
                                   ),
                                   const Icon(Icons.chevron_right),
@@ -166,7 +167,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _send(),
                   decoration: InputDecoration(
-                    hintText: 'Message',
+                    hintText: context.l10n.messageHint,
                     counterText: '',
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide(color: scheme.outlineVariant)),
@@ -178,7 +179,7 @@ class _ChatScreenState extends State<ChatScreen> {
               IconButton(
                 onPressed: _input.text.trim().isEmpty || _sending ? null : _send,
                 icon: const Icon(Icons.send),
-                tooltip: 'Send',
+                tooltip: context.l10n.send,
               ),
             ]),
           ),
@@ -213,7 +214,7 @@ class _Bubble extends StatelessWidget {
                     ? Row(mainAxisSize: MainAxisSize.min, children: [
                         Icon(Icons.image_outlined, size: 18, color: fg),
                         const SizedBox(width: 6),
-                        Text('Photo', style: TextStyle(color: fg, fontSize: 15)),
+                        Text(context.l10n.photo, style: TextStyle(color: fg, fontSize: 15)),
                       ])
                     : Text(message.text, style: TextStyle(color: fg, fontSize: 15, height: 1.3)),
               ),
@@ -222,7 +223,7 @@ class _Bubble extends StatelessWidget {
           if (message.delivery == MessageDelivery.notSent)
             Padding(
               padding: const EdgeInsets.only(top: 3, right: 4),
-              child: Text('Not delivered · demo', style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+              child: Text(context.l10n.notDeliveredDemo, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
             ),
         ],
       ),

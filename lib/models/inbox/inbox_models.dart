@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../feed/feed_author.dart';
+import '../../l10n/l10n.dart';
 
 /// One row of the Messages list: a one-to-one conversation.
 @immutable
@@ -71,12 +72,15 @@ enum ActivityKind { invite, like, comment, follow, reminder }
 enum InviteStatus { pending, accepted, declined }
 
 enum ActivityFilter {
-  all('All'),
-  invites('Invites'),
-  interactions('Interactions');
+  all,
+  invites,
+  interactions;
 
-  final String label;
-  const ActivityFilter(this.label);
+  String get label => switch (this) {
+        ActivityFilter.all => L10n.current.all,
+        ActivityFilter.invites => L10n.current.filterInvites,
+        ActivityFilter.interactions => L10n.current.filterInteractions,
+      };
 
   bool includes(ActivityKind kind) => switch (this) {
         ActivityFilter.all => true,

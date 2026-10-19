@@ -1,18 +1,28 @@
+import '../../l10n/l10n.dart';
 /// Who can find and open a Party. Stored as its [name] (`public`, `unlisted`,
 /// `private`), matching the `privacy` column used by [Party].
 enum PartyPrivacy {
   /// Shown in search and discovery.
-  public('Public', 'Discoverable by everyone'),
+  public,
 
   /// Hidden from search and discovery; anyone with the link can open it.
-  unlisted('Unlisted', 'Anyone with the link'),
+  unlisted,
 
   /// Only the host and approved / invited members can open it. A link alone
   /// is not enough.
-  private('Private', 'Approved members only');
+  private;
 
-  final String label, description;
-  const PartyPrivacy(this.label, this.description);
+  String get label => switch (this) {
+        PartyPrivacy.public => L10n.current.privacyPublic,
+        PartyPrivacy.unlisted => L10n.current.privacyUnlisted,
+        PartyPrivacy.private => L10n.current.privacyPrivate,
+      };
+
+  String get description => switch (this) {
+        PartyPrivacy.public => L10n.current.privacyPublicDescription,
+        PartyPrivacy.unlisted => L10n.current.privacyUnlistedDescription,
+        PartyPrivacy.private => L10n.current.privacyPrivateDescription,
+      };
 
   static PartyPrivacy parse(String? value) =>
       PartyPrivacy.values.firstWhere((p) => p.name == value, orElse: () => PartyPrivacy.public);
@@ -22,16 +32,19 @@ enum PartyPrivacy {
 /// Party's `countdown_style`.
 enum TimerStyle {
   /// Hours, minutes and seconds: `06:00:00`.
-  digital('Digital'),
+  digital,
 
   /// Short remaining time: `6h`, `5h 59m`.
-  minimal('Minimal'),
+  minimal,
 
   /// A ring showing how much of the Party's duration is left.
-  ring('Ring');
+  ring;
 
-  final String label;
-  const TimerStyle(this.label);
+  String get label => switch (this) {
+        TimerStyle.digital => L10n.current.timerDigital,
+        TimerStyle.minimal => L10n.current.timerMinimal,
+        TimerStyle.ring => L10n.current.timerRing,
+      };
 
   /// Older styles (motor, gothic, …) fall back to digital.
   static TimerStyle parse(String? value) => TimerStyle.values.firstWhere((s) => s.name == value, orElse: () => TimerStyle.digital);
@@ -56,7 +69,24 @@ class PartyCategories {
     'other',
   ];
 
-  static String label(String id) => id.isEmpty ? id : id[0].toUpperCase() + id.substring(1);
+  static String label(String id) {
+    final l = L10n.current;
+    return switch (id) {
+      'travel' => l.categoryTravel,
+      'food' => l.categoryFood,
+      'music' => l.categoryMusic,
+      'nature' => l.categoryNature,
+      'photography' => l.categoryPhotography,
+      'pets' => l.categoryPets,
+      'art' => l.categoryArt,
+      'sports' => l.categorySports,
+      'fashion' => l.categoryFashion,
+      'party' => l.categoryParty,
+      'lifestyle' => l.categoryLifestyle,
+      'other' => l.categoryOther,
+      _ => id.isEmpty ? id : id[0].toUpperCase() + id.substring(1),
+    };
+  }
 }
 
 /// Valid range for a Party's length, shared by the create form and the backend

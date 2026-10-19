@@ -22,20 +22,22 @@ import '../../widgets/countdown/timer_face.dart';
 import '../../widgets/feed/feed_media_view.dart';
 import '../../widgets/media/local_media_image.dart';
 import '../../widgets/party/party_grid_card.dart';
+import '../../l10n/l10n.dart';
 
 enum _Step { details, timing }
 
 enum _StartMode { now, schedule }
 
 enum _Preset {
-  h1('1h', Duration(hours: 1)),
-  h6('6h', Duration(hours: 6)),
-  h24('24h', Duration(hours: 24)),
-  custom('Custom', null);
+  h1(Duration(hours: 1)),
+  h6(Duration(hours: 6)),
+  h24(Duration(hours: 24)),
+  custom(null);
 
-  final String label;
   final Duration? duration;
-  const _Preset(this.label, this.duration);
+  const _Preset(this.duration);
+
+  String get label => duration == null ? L10n.current.custom : L10n.current.unitHours(duration!.inHours);
 }
 
 /// Create a Party in two steps — Details, then Time & style. Everything typed
@@ -94,25 +96,25 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
   /// Shown under the duration fields as soon as the value is out of range.
   String? get _durationError {
     final d = _duration;
-    if (d == null) return 'Use whole numbers.';
-    if (d < PartyLimits.minDuration) return 'A Party needs at least 1 minute.';
-    if (d > PartyLimits.maxDuration) return 'A Party can last up to 30 days.';
+    if (d == null) return context.l10n.durationWholeNumbers;
+    if (d < PartyLimits.minDuration) return context.l10n.durationTooShort;
+    if (d > PartyLimits.maxDuration) return context.l10n.durationTooLong;
     return null;
   }
 
   String? _validateTitle() {
     final t = _title.text.trim();
-    if (t.isEmpty) return 'Add a title for your Party.';
-    if (t.length > PartyLimits.titleMax) return 'Keep the title under ${PartyLimits.titleMax} characters.';
+    if (t.isEmpty) return context.l10n.titleRequired;
+    if (t.length > PartyLimits.titleMax) return context.l10n.titleTooLong(PartyLimits.titleMax);
     return null;
   }
 
   String? _validateSchedule(DateTime now) {
     if (_startMode == _StartMode.now) return null;
     final s = _scheduledStart;
-    if (s == null) return 'Choose when the Party starts.';
-    if (!s.isAfter(now)) return 'Choose a start time in the future.';
-    if (s.isAfter(now.add(PartyLimits.maxScheduleAhead))) return 'Choose a start within the next year.';
+    if (s == null) return context.l10n.startRequired;
+    if (!s.isAfter(now)) return context.l10n.startInPast;
+    if (s.isAfter(now.add(PartyLimits.maxScheduleAhead))) return context.l10n.startTooFar;
     return null;
   }
 
@@ -147,7 +149,7 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
       final x = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 2400, imageQuality: 90);
       if (x != null && mounted) setState(() => _coverPath = x.path);
     } catch (_) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Couldn\'t open your photos.')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.photosOpenFailed)));
     }
   }
 
@@ -251,7 +253,7 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
       if (!mounted) return;
       context.pushReplacement('/p/${created.id}');
     } catch (_) {
-      if (mounted) setState(() => _submitError = 'Couldn\'t create the Party. Your details are saved — check your connection and try again.');
+      if (mounted) setState(() => _submitError = context.l10n.createFailed);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -270,15 +272,15 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(icon: const Icon(Icons.arrow_back), tooltip: 'Back', onPressed: _submitting ? null : _back),
+          leading: IconButton(icon: const Icon(Icons.arrow_back), tooltip: context.l10n.back, onPressed: _submitting ? null : _back),
           centerTitle: true,
-          title: const Text('Create Party', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+          title: Text(context.l10n.createParty, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: Tokens.gutter),
               child: Center(
-                child: Text('${_step.index + 1} of 2',
-                    semanticsLabel: 'Step ${_step.index + 1} of 2', style: TextStyle(fontSize: 15, color: theme.colorScheme.onSurfaceVariant)),
+                child: Text(context.l10n.stepOf(_step.index + 1, 2),
+                    semanticsLabel: context.l10n.stepOfSemantics(_step.index + 1, 2), style: TextStyle(fontSize: 15, color: theme.colorScheme.onSurfaceVariant)),
               ),
             ),
           ],
@@ -288,7 +290,7 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
             UnderlineTabs<_Step>(
               values: _Step.values,
               selected: _step,
-              labelOf: (s) => s == _Step.details ? 'Details' : 'Time & style',
+              labelOf: (s) => s == _Step.details ? context.l10n.stepDetails : context.l10n.stepTimeStyle,
               onSelected: (s) => s == _Step.details ? setState(() => _step = _Step.details) : _goToTiming(),
               indicatorInset: 28,
             ),
@@ -305,9 +307,9 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
               child: _step == _Step.details
                   ? FilledButton(
                       onPressed: _goToTiming,
-                      child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Text('Continue'),
-                        SizedBox(width: 8),
+                      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Text(context.l10n.continueAction),
+                        const SizedBox(width: 8),
                         Icon(Icons.arrow_forward, size: 20),
                       ]),
                     )
@@ -316,7 +318,7 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
                       icon: _submitting
                           ? SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.onSurfaceVariant))
                           : const Icon(Icons.celebration_outlined),
-                      label: Text(_submitting ? 'Creating…' : 'Create Party'),
+                      label: Text(_submitting ? context.l10n.creating : context.l10n.createParty),
                     ),
             ),
           ],
@@ -334,7 +336,7 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
       children: [
         _CoverPicker(path: _coverPath, onPick: _pickCover),
         const SizedBox(height: 18),
-        const FieldLabel('Title'),
+        FieldLabel(context.l10n.fieldTitle),
         TextField(
           controller: _title,
           focusNode: _titleFocus,
@@ -345,10 +347,10 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
           onChanged: (_) {
             if (_titleError != null) setState(() => _titleError = _validateTitle());
           },
-          decoration: InputDecoration(hintText: 'Give your Party a name', errorText: _titleError),
+          decoration: InputDecoration(hintText: context.l10n.titleHint, errorText: _titleError),
         ),
         const SizedBox(height: 6),
-        const FieldLabel('Description', trailing: 'Optional'),
+        FieldLabel(context.l10n.fieldDescription, trailing: context.l10n.optional),
         TextField(
           controller: _description,
           maxLength: PartyLimits.descriptionMax,
@@ -356,10 +358,10 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
           maxLines: 5,
           textCapitalization: TextCapitalization.sentences,
           style: const TextStyle(fontSize: 16),
-          decoration: const InputDecoration(hintText: 'What should people share?'),
+          decoration: InputDecoration(hintText: context.l10n.descriptionHint),
         ),
         const SizedBox(height: 6),
-        const FieldLabel('Category'),
+        FieldLabel(context.l10n.fieldCategory),
         DropdownButtonFormField<String>(
           initialValue: _category,
           isExpanded: true,
@@ -370,7 +372,7 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
           onChanged: (v) => setState(() => _category = v ?? _category),
         ),
         const SizedBox(height: 18),
-        const FieldLabel('Privacy'),
+        FieldLabel(context.l10n.fieldPrivacy),
         _PrivacyGroup(value: _privacy, onChanged: (p) => setState(() => _privacy = p)),
       ],
     );
@@ -389,11 +391,11 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
       children: [
         _TimerPreview(coverPath: _coverPath, duration: durationError == null ? duration! : Duration.zero, timerStyle: _timerStyle),
         const SizedBox(height: 18),
-        const FieldLabel('Starts'),
+        FieldLabel(context.l10n.fieldStarts),
         SegmentedChoice<_StartMode>(
           values: _StartMode.values,
           selected: _startMode,
-          labelOf: (m) => m == _StartMode.now ? 'Now' : 'Schedule',
+          labelOf: (m) => m == _StartMode.now ? context.l10n.startNow : context.l10n.startSchedule,
           onSelected: _setStartMode,
         ),
         if (_startMode == _StartMode.schedule) ...[
@@ -401,8 +403,8 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
           Row(children: [
             Expanded(
               child: _PickerTile(
-                label: 'Date',
-                value: _scheduledStart == null ? 'Choose' : DateFormat('EEE, MMM d').format(_scheduledStart!),
+                label: context.l10n.date,
+                value: _scheduledStart == null ? context.l10n.choose : DateFormat.MMMEd(L10n.dateLocale).format(_scheduledStart!),
                 icon: Icons.calendar_today_outlined,
                 onTap: _pickDate,
                 error: _scheduleError != null,
@@ -411,8 +413,8 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: _PickerTile(
-                label: 'Time',
-                value: _scheduledStart == null ? 'Choose' : DateFormat('HH:mm').format(_scheduledStart!),
+                label: context.l10n.time,
+                value: _scheduledStart == null ? context.l10n.choose : DateFormat('HH:mm').format(_scheduledStart!),
                 icon: Icons.schedule,
                 onTap: _pickTime,
                 error: _scheduleError != null,
@@ -422,18 +424,18 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
           FieldError(_scheduleError),
         ],
         const SizedBox(height: 18),
-        const FieldLabel('Duration'),
+        FieldLabel(context.l10n.fieldDuration),
         SegmentedChoice<_Preset>(values: _Preset.values, selected: _preset, labelOf: (p) => p.label, onSelected: _setPreset, separated: true),
         const SizedBox(height: 6),
-        Text('From 1 minute up to 30 days', style: muted),
+        Text(context.l10n.durationRange, style: muted),
         if (_preset == _Preset.custom) ...[
           const SizedBox(height: 10),
           Row(children: [
-            Expanded(child: _NumberField(label: 'Days', controller: _days, onChanged: () => setState(() {}))),
+            Expanded(child: _NumberField(label: context.l10n.days, controller: _days, onChanged: () => setState(() {}))),
             const SizedBox(width: 8),
-            Expanded(child: _NumberField(label: 'Hours', controller: _hours, onChanged: () => setState(() {}))),
+            Expanded(child: _NumberField(label: context.l10n.hours, controller: _hours, onChanged: () => setState(() {}))),
             const SizedBox(width: 8),
-            Expanded(child: _NumberField(label: 'Minutes', controller: _minutes, onChanged: () => setState(() {}))),
+            Expanded(child: _NumberField(label: context.l10n.minutes, controller: _minutes, onChanged: () => setState(() {}))),
           ]),
           FieldError(durationError),
         ],
@@ -444,7 +446,7 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
           scheduled: _startMode == _StartMode.schedule,
         ),
         const SizedBox(height: 20),
-        const FieldLabel('Timer style'),
+        FieldLabel(context.l10n.fieldTimerStyle),
         Row(children: [
           for (final s in TimerStyle.values) ...[
             if (s != TimerStyle.values.first) const SizedBox(width: 8),
@@ -455,7 +457,7 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
         Row(children: [
           Icon(Icons.info_outline, size: 16, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(width: 6),
-          Expanded(child: Text('Cover is used until the first contribution.', style: muted)),
+          Expanded(child: Text(context.l10n.coverNote, style: muted)),
         ]),
       ],
     );
@@ -477,9 +479,9 @@ class _CoverPicker extends StatelessWidget {
         child: Stack(fit: StackFit.expand, children: [
           path == null ? const MediaPlaceholder() : LocalMediaImage(path: path!),
           if (path == null)
-            Center(child: _CoverButton(label: 'Add cover', icon: Icons.add_photo_alternate_outlined, onTap: onPick))
+            Center(child: _CoverButton(label: context.l10n.addCover, icon: Icons.add_photo_alternate_outlined, onTap: onPick))
           else
-            Positioned(right: 10, bottom: 10, child: _CoverButton(label: 'Change cover', icon: Icons.photo_camera_outlined, onTap: onPick)),
+            Positioned(right: 10, bottom: 10, child: _CoverButton(label: context.l10n.changeCover, icon: Icons.photo_camera_outlined, onTap: onPick)),
         ]),
       ),
     );
@@ -590,7 +592,7 @@ class _TimerPreview extends StatelessWidget {
                   timerStyle: timerStyle,
                   style: CountdownStyle.compact,
                   fractionLeft: 1,
-                  caption: 'Preview',
+                  caption: context.l10n.preview,
                 ),
               ),
             ),
@@ -681,16 +683,16 @@ class _EndSummary extends StatelessWidget {
           child: ClockBuilder(builder: (context, now) {
             final d = duration;
             if (d == null) {
-              return Text('Set a valid duration to see when it ends.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant));
+              return Text(context.l10n.durationInvalidHint, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant));
             }
             final start = startFor(now);
             final end = start.add(d);
             final ends = TimeFormat.dayAndTime(end, now);
             return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Ends $ends', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+              Text(context.l10n.endsAt(ends), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
               const SizedBox(height: 2),
               Text(
-                scheduled ? 'Starts ${TimeFormat.dayAndTime(start, now)} · runs ${TimeFormat.duration(d)}' : '${TimeFormat.duration(d)} from now',
+                scheduled ? context.l10n.startsAndRuns(TimeFormat.dayAndTime(start, now), TimeFormat.duration(d)) : context.l10n.durationFromNow(TimeFormat.duration(d)),
                 style: theme.textTheme.bodySmall?.copyWith(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
               ),
             ]);
@@ -727,7 +729,7 @@ class _StyleTile extends StatelessWidget {
       button: true,
       inMutuallyExclusiveGroup: true,
       checked: selected,
-      label: '${style.label} timer',
+      label: context.l10n.timerStyleSemantics(style.label),
       child: ExcludeSemantics(
         child: InkWell(
           onTap: onTap,

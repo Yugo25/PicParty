@@ -10,6 +10,7 @@ import '../../widgets/common/underline_tabs.dart';
 import '../../widgets/feed/author_avatar.dart';
 import 'activity_tab.dart';
 import 'messages_tab.dart';
+import '../../l10n/l10n.dart';
 
 enum InboxTab { messages, activity }
 
@@ -58,21 +59,21 @@ class _InboxScreenState extends State<InboxScreen> {
               Center(
                 child: Semantics(
                   header: true,
-                  child: Text('Inbox', style: theme.textTheme.headlineSmall?.copyWith(fontSize: 24, fontWeight: FontWeight.w700)),
+                  child: Text(context.l10n.inbox, style: theme.textTheme.headlineSmall?.copyWith(fontSize: 24, fontWeight: FontWeight.w700)),
                 ),
               ),
               Positioned(
                 right: 4,
                 top: 0,
                 bottom: 0,
-                child: IconButton(onPressed: _newMessage, icon: const Icon(Icons.edit_square), tooltip: 'New message'),
+                child: IconButton(onPressed: _newMessage, icon: const Icon(Icons.edit_square), tooltip: context.l10n.newMessage),
               ),
             ]),
           ),
           UnderlineTabs<InboxTab>(
             values: InboxTab.values,
             selected: _tab,
-            labelOf: (t) => t == InboxTab.messages ? 'Messages' : 'Activity',
+            labelOf: (t) => t == InboxTab.messages ? context.l10n.messages : context.l10n.activity,
             onSelected: (t) => setState(() => _tab = t),
             fontSize: 16,
           ),
@@ -120,12 +121,12 @@ class _NewMessageSheetState extends State<_NewMessageSheet> {
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.7,
         child: Column(children: [
-          Text('New message', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+          Text(context.l10n.newMessage, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
           Padding(
             padding: const EdgeInsets.fromLTRB(Tokens.gutter, 12, Tokens.gutter, 8),
             child: AppSearchField(
               controller: _search,
-              hint: 'Search people',
+              hint: context.l10n.searchPeople,
               onChanged: (q) => setState(() => _people = _load(q)),
             ),
           ),
@@ -136,7 +137,7 @@ class _NewMessageSheetState extends State<_NewMessageSheet> {
                 if (snap.hasError) return ErrorState(onRetry: () => setState(() => _people = _load(_search.text)));
                 if (!snap.hasData) return const LoadingState();
                 final list = snap.data!;
-                if (list.isEmpty) return const EmptyState(icon: Icons.person_search_outlined, title: 'No people found');
+                if (list.isEmpty) return EmptyState(icon: Icons.person_search_outlined, title: context.l10n.noPeopleFound);
                 return ListView.builder(
                   itemCount: list.length,
                   itemBuilder: (context, i) => ListTile(

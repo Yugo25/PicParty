@@ -7,6 +7,7 @@ import '../../theme/tokens.dart';
 import '../countdown/clock_builder.dart';
 import '../countdown/phase_builder.dart';
 import 'party_image.dart';
+import '../../l10n/l10n.dart';
 
 const _shadow = [Shadow(color: Color(0x73000000), blurRadius: 6)];
 const _tabular = [FontFeature.tabularFigures()];
@@ -72,7 +73,7 @@ class PartyGridCard extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       onPressed: onMenu,
                       icon: const Icon(Icons.more_horiz, size: 20),
-                      tooltip: 'More options for ${party.title}',
+                      tooltip: context.l10n.moreOptionsFor(party.title),
                     ),
                   ),
               ],
@@ -112,28 +113,28 @@ class CardCountdown extends StatelessWidget {
       child: ClockBuilder(builder: (context, now) {
         final snap = CountdownSnapshot.at(start: startAt, end: endAt, now: now);
         if (snap.phase == CountdownPhase.closed) {
-          return const Column(
+          return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Text('Uploads closed', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700, shadows: _shadow)),
+                child: Text(context.l10n.uploadsClosed, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700, shadows: _shadow)),
               ),
-              SizedBox(height: 2),
+              const SizedBox(height: 2),
               Row(mainAxisSize: MainAxisSize.min, children: [
-                Text('View memories', style: TextStyle(color: Colors.white, fontSize: 13, shadows: _shadow)),
-                SizedBox(width: 4),
-                Icon(Icons.arrow_forward, size: 14, color: Colors.white),
+                Text(context.l10n.viewMemories, style: const TextStyle(color: Colors.white, fontSize: 13, shadows: _shadow)),
+                const SizedBox(width: 4),
+                const Icon(Icons.arrow_forward, size: 14, color: Colors.white),
               ]),
             ],
           );
         }
-        final label = snap.phase == CountdownPhase.upcoming ? 'STARTS IN' : 'LEFT';
+        final label = snap.phase == CountdownPhase.upcoming ? context.l10n.cardStartsIn : context.l10n.cardLeft;
         final time = CountdownSnapshot.formatCompact(snap.remaining);
         return Semantics(
-          label: snap.phase == CountdownPhase.upcoming ? 'Starts in $time' : '$time left',
+          label: snap.phase == CountdownPhase.upcoming ? context.l10n.startsInSemantics(time) : context.l10n.timeLeftSemantics(time),
           child: ExcludeSemantics(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,9 +167,9 @@ class PartyAudienceText extends StatelessWidget {
   const PartyAudienceText({super.key, required this.party, this.style});
 
   static String label(FeedParty party, CountdownPhase phase) {
-    String plural(int n, String word) => '$n $word${n == 1 ? '' : 's'}';
-    if (phase == CountdownPhase.upcoming || party.contributorCount == 0) return plural(party.memberCount, 'member');
-    return plural(party.contributorCount, 'contributor');
+    final l = L10n.current;
+    if (phase == CountdownPhase.upcoming || party.contributorCount == 0) return l.memberCount(party.memberCount);
+    return l.contributorCount(party.contributorCount);
   }
 
   @override
@@ -214,10 +215,10 @@ class MemoryCard extends StatelessWidget {
               child: Stack(fit: StackFit.expand, children: [
                 PartyImage(party: party),
                 const IgnorePointer(child: photoScrim),
-                const Positioned(
+                Positioned(
                   left: 10,
                   bottom: 8,
-                  child: Text('Uploads closed', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600, shadows: _shadow)),
+                  child: Text(context.l10n.uploadsClosed, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600, shadows: _shadow)),
                 ),
               ]),
             ),
@@ -225,7 +226,7 @@ class MemoryCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(party.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.titleMedium?.copyWith(fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
-          Text('${TimeFormat.date(party.endAt)} · $n ${n == 1 ? 'memory' : 'memories'}',
+          Text('${TimeFormat.date(party.endAt)} · ${context.l10n.memoryCount(n)}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodySmall?.copyWith(fontSize: 13, color: theme.colorScheme.onSurfaceVariant)),

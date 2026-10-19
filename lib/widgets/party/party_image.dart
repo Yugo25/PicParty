@@ -3,6 +3,7 @@ import '../../models/feed/feed_party.dart';
 import '../../models/feed/feed_post.dart';
 import '../feed/feed_media_view.dart';
 import '../media/local_media_image.dart';
+import '../../l10n/l10n.dart';
 
 /// A network image requested at the pixel size it is drawn at, with a neutral
 /// placeholder while loading and on error (same size, so nothing jumps).
@@ -71,10 +72,10 @@ class PostThumbnail extends StatelessWidget {
   Widget build(BuildContext context) => Stack(fit: StackFit.expand, children: [
         PostImage(post: post),
         if (post.isVideo)
-          const Positioned(
+          Positioned(
             top: 6,
             right: 6,
-            child: Icon(Icons.videocam_outlined, color: Colors.white, size: 18, semanticLabel: 'Video', shadows: [Shadow(color: Color(0x66000000), blurRadius: 4)]),
+            child: Icon(Icons.videocam_outlined, color: Colors.white, size: 18, semanticLabel: context.l10n.video, shadows: const [Shadow(color: Color(0x66000000), blurRadius: 4)]),
           ),
       ]);
 }

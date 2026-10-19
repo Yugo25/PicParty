@@ -1,26 +1,40 @@
 import '../../models/feed/feed_author.dart';
 import '../../models/feed/feed_party.dart';
 import 'mock_explore_repository.dart';
+import '../../l10n/l10n.dart';
 
 /// Which Parties Explore lists, and in what order.
 enum PartyView {
   /// Running now (uploads open), most popular first.
-  live('Live', 'Running now — uploads are open'),
+  live,
 
   /// Most popular Parties that have not ended.
-  trending('Trending', 'Popular Parties that haven\'t ended'),
+  trending,
 
   /// Newest first, by creation time, not ended.
-  newest('New', 'Recently created, not ended'),
+  newest,
 
   /// Running now, closing soonest first.
-  endingSoon('Ending soon', 'Running now, closing soonest first'),
+  endingSoon,
 
   /// Everything, including Parties that have ended.
-  everything('Everything', 'Includes upcoming and ended Parties');
+  everything;
 
-  final String label, description;
-  const PartyView(this.label, this.description);
+  String get label => switch (this) {
+        PartyView.live => L10n.current.viewLive,
+        PartyView.trending => L10n.current.viewTrending,
+        PartyView.newest => L10n.current.viewNewest,
+        PartyView.endingSoon => L10n.current.viewEndingSoon,
+        PartyView.everything => L10n.current.viewEverything,
+      };
+
+  String get description => switch (this) {
+        PartyView.live => L10n.current.viewLiveDescription,
+        PartyView.trending => L10n.current.viewTrendingDescription,
+        PartyView.newest => L10n.current.viewNewestDescription,
+        PartyView.endingSoon => L10n.current.viewEndingSoonDescription,
+        PartyView.everything => L10n.current.viewEverythingDescription,
+      };
 }
 
 /// A Party search in Explore.

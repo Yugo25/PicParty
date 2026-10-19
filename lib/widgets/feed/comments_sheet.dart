@@ -3,6 +3,7 @@ import '../../models/feed/feed_author.dart';
 import '../../models/feed/feed_post.dart';
 import '../../services/mock_feed_repository.dart';
 import 'author_avatar.dart';
+import '../../l10n/l10n.dart';
 
 /// Shows the comments of one post (mock data) in a bottom sheet.
 Future<void> showCommentsSheet(BuildContext context, FeedPost post) => showModalBottomSheet<void>(
@@ -48,12 +49,12 @@ class _CommentsSheetState extends State<_CommentsSheet> {
         height: MediaQuery.sizeOf(context).height * 0.6,
         child: Column(
           children: [
-            Text('Comments', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            Text(context.l10n.comments, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             const Divider(),
             Expanded(
               child: comments.isEmpty
-                  ? Center(child: Text('No comments yet', style: TextStyle(color: theme.colorScheme.onSurfaceVariant)))
+                  ? Center(child: Text(context.l10n.noComments, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)))
                   : ListView.builder(
                       itemCount: comments.length,
                       itemBuilder: (context, i) {
@@ -79,10 +80,10 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                         maxLength: 500,
                         textInputAction: TextInputAction.send,
                         onSubmitted: (_) => _send(),
-                        decoration: const InputDecoration(hintText: 'Add a comment', border: InputBorder.none, counterText: ''),
+                        decoration: InputDecoration(hintText: context.l10n.addComment, border: InputBorder.none, counterText: ''),
                       ),
                     ),
-                    IconButton(onPressed: _send, icon: const Icon(Icons.send_outlined), tooltip: 'Send'),
+                    IconButton(onPressed: _send, icon: const Icon(Icons.send_outlined), tooltip: context.l10n.send),
                   ],
                 ),
               ),

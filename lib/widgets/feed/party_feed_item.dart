@@ -13,6 +13,7 @@ import 'party_media_carousel.dart';
 import 'party_menu_sheet.dart';
 import 'post_action_bar.dart';
 import 'post_caption.dart';
+import '../../l10n/l10n.dart';
 
 /// One Party in the home feed:
 /// header → photo-backed countdown → post actions → caption → divider.
@@ -126,7 +127,7 @@ class _PartyFeedItemState extends State<PartyFeedItem> {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Text('No posts yet — the cover is shown until the first contribution.',
+          child: Text(context.l10n.feedNoPosts,
               style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15, color: theme.colorScheme.onSurfaceVariant)),
         ),
         Padding(

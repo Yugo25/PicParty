@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/feed/feed_post.dart';
+import '../../l10n/l10n.dart';
 
 /// Short caption of the post being shown, and the "View Party" link.
 class PostCaption extends StatelessWidget {
@@ -42,7 +43,7 @@ class ViewPartyLink extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('View Party', style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15, fontWeight: FontWeight.w500)),
+            Text(context.l10n.viewParty, style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15, fontWeight: FontWeight.w500)),
             const SizedBox(width: 4),
             const Icon(Icons.chevron_right, size: 20),
           ],

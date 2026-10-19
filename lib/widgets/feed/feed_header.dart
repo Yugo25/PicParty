@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/mock_feed_repository.dart';
 import '../common/underline_tabs.dart';
+import '../../l10n/l10n.dart';
 
 /// Wordmark, search and notifications, then the For you / Following tabs.
 ///
@@ -29,8 +30,8 @@ class FeedHeader extends StatelessWidget {
                 child: Text('PicParty', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.5)),
               ),
               const Spacer(),
-              IconButton(onPressed: onSearch, icon: const Icon(Icons.search), tooltip: 'Search'),
-              IconButton(onPressed: onNotifications, icon: const Icon(Icons.notifications_none), tooltip: 'Notifications'),
+              IconButton(onPressed: onSearch, icon: const Icon(Icons.search), tooltip: context.l10n.search),
+              IconButton(onPressed: onNotifications, icon: const Icon(Icons.notifications_none), tooltip: context.l10n.notifications),
               const SizedBox(width: 4),
             ],
           ),
@@ -38,7 +39,7 @@ class FeedHeader extends StatelessWidget {
         UnderlineTabs<FeedTab>(
           values: FeedTab.values,
           selected: tab,
-          labelOf: (t) => t == FeedTab.forYou ? 'For you' : 'Following',
+          labelOf: (t) => t == FeedTab.forYou ? context.l10n.forYou : context.l10n.feedFollowing,
           onSelected: onTab,
           height: 42,
         ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../config/app_config.dart';
+import '../../l10n/l10n.dart';
 import '../../services/mock/mock_network.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/appearance_picker.dart';
 import '../../widgets/common/app_back_button.dart';
+import '../../widgets/language_picker.dart';
 
 /// Settings, opened from the gear on your profile.
 class SettingsScreen extends StatelessWidget {
@@ -12,23 +14,24 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(leading: const AppBackButton(), centerTitle: true, title: const Text('Settings', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
+      appBar: AppBar(leading: const AppBackButton(), centerTitle: true, title: Text(l.settings, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700))),
       body: ListView(
         padding: EdgeInsets.only(bottom: 24 + MediaQuery.paddingOf(context).bottom),
         children: [
-          const _Section('Appearance'),
+          _Section(l.appearance),
           const AppearancePicker(),
           const Divider(indent: Tokens.gutter, endIndent: Tokens.gutter),
-          const _Section('Language'),
-          const ListTile(enabled: false, leading: Icon(Icons.language), title: Text('App language'), trailing: Text('Coming soon')),
+          _Section(l.language),
+          const LanguagePicker(),
           if (AppConfig.demoMode) ...[
             const Divider(indent: Tokens.gutter, endIndent: Tokens.gutter),
-            const _Section('Demo'),
+            _Section(l.demo),
             Padding(
               padding: const EdgeInsets.fromLTRB(Tokens.gutter, 0, Tokens.gutter, 8),
               child: Text(
-                'This build has no server. Parties, messages and activity are sample data that stay on this device.',
+                l.demoNotice,
                 style: TextStyle(color: scheme.onSurfaceVariant),
               ),
             ),
@@ -37,8 +40,8 @@ class SettingsScreen extends StatelessWidget {
               builder: (context, on, _) => SwitchListTile(
                 value: on,
                 onChanged: (v) => MockNetwork.simulateErrors.value = v,
-                title: const Text('Simulate connection errors'),
-                subtitle: Text('Preview how lists and forms behave offline', style: TextStyle(color: scheme.onSurfaceVariant)),
+                title: Text(l.simulateErrors),
+                subtitle: Text(l.simulateErrorsDescription, style: TextStyle(color: scheme.onSurfaceVariant)),
               ),
             ),
           ],

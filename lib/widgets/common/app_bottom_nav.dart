@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/inbox/inbox_repository.dart';
+import '../../l10n/l10n.dart';
 
 class _NavItem {
   final String label, path;
@@ -9,13 +10,13 @@ class _NavItem {
   const _NavItem(this.label, this.path, this.icon, this.selectedIcon, {this.push = false});
 }
 
-const _navItems = [
-  _NavItem('Home', '/', Icons.home_outlined, Icons.home),
-  _NavItem('Explore', '/discover', Icons.explore_outlined, Icons.explore),
-  _NavItem('Create', '/create', Icons.add_circle_outline, Icons.add_circle, push: true),
-  _NavItem('Inbox', '/activity', Icons.chat_bubble_outline, Icons.chat_bubble),
-  _NavItem('Profile', '/profile', Icons.person_outline, Icons.person),
-];
+List<_NavItem> _navItems(AppLocalizations l) => [
+      _NavItem(l.home, '/', Icons.home_outlined, Icons.home),
+      _NavItem(l.explore, '/discover', Icons.explore_outlined, Icons.explore),
+      _NavItem(l.create, '/create', Icons.add_circle_outline, Icons.add_circle, push: true),
+      _NavItem(l.inbox, '/activity', Icons.chat_bubble_outline, Icons.chat_bubble),
+      _NavItem(l.profile, '/profile', Icons.person_outline, Icons.person),
+    ];
 
 /// Bottom navigation: Home / Explore / Create / Inbox / Profile, above the
 /// device's safe area so nothing is hidden behind the home indicator.
@@ -35,7 +36,7 @@ class AppBottomNav extends StatelessWidget {
           height: 56,
           child: Row(
             children: [
-              for (final item in _navItems)
+              for (final item in _navItems(context.l10n))
                 Expanded(child: _NavButton(item: item, selected: !item.push && item.path == currentPath)),
             ],
           ),
@@ -63,7 +64,7 @@ class _NavButton extends StatelessWidget {
       builder: (context, _) => Semantics(
         button: true,
         selected: selected,
-        label: inbox && repo.hasUnread ? '${item.label}, new activity' : item.label,
+        label: inbox && repo.hasUnread ? context.l10n.navNewActivity(item.label) : item.label,
         child: InkResponse(
           onTap: () => item.push ? context.push(item.path) : context.go(item.path),
           child: ExcludeSemantics(

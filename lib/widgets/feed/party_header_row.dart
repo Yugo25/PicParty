@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/feed/feed_party.dart';
 import '../party/party_grid_card.dart';
 import '../party/party_image.dart';
+import '../../l10n/l10n.dart';
 
 /// Thumbnail, Party name, contributor count and the menu button.
 class PartyHeaderRow extends StatelessWidget {
@@ -41,7 +42,7 @@ class PartyHeaderRow extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(onPressed: onMenu, icon: const Icon(Icons.more_horiz), tooltip: 'More'),
+          IconButton(onPressed: onMenu, icon: const Icon(Icons.more_horiz), tooltip: context.l10n.more),
         ],
       ),
     );

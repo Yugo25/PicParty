@@ -15,6 +15,7 @@ import '../../widgets/party/party_grid_card.dart';
 import '../../widgets/party/party_image.dart';
 import '../media_detail/post_viewer_screen.dart';
 import '../../widgets/common/app_back_button.dart';
+import '../../l10n/l10n.dart';
 
 /// "View Party": the Party's timer, upload button and all of its posts.
 /// Posts stay viewable after the deadline; uploads are only possible while live.
@@ -51,7 +52,7 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
     // Re-check: the deadline may have passed while the picker was open.
     final now = DateTime.now();
     if (!CountdownSnapshot.at(start: party.startAt, end: party.endAt, now: now).acceptsUploads) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Uploads for this Party are closed')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.uploadsClosedForParty)));
       return;
     }
     final video = (x.mimeType ?? '').startsWith('video/') || RegExp(r'\.(mp4|mov|m4v|webm)$', caseSensitive: false).hasMatch(x.name);
@@ -64,7 +65,7 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
     if (party == null) {
       return Scaffold(
         appBar: AppBar(leading: const AppBackButton()),
-        body: const Center(child: EmptyState(icon: Icons.event_busy_outlined, title: 'Party not found', message: 'It may have been removed.')),
+        body: Center(child: EmptyState(icon: Icons.event_busy_outlined, title: context.l10n.partyNotFound, message: context.l10n.partyMaybeRemoved)),
       );
     }
     // Private Parties need membership; having the link is not enough.
@@ -77,7 +78,7 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
       appBar: AppBar(
         leading: const AppBackButton(),
         title: Text(party.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-        actions: [IconButton(onPressed: () => copyPartyLink(context, party), icon: const Icon(Icons.ios_share), tooltip: 'Copy link')],
+        actions: [IconButton(onPressed: () => copyPartyLink(context, party), icon: const Icon(Icons.ios_share), tooltip: context.l10n.copyLink)],
       ),
       body: CustomScrollView(
         slivers: [
@@ -108,7 +109,7 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
                     builder: (context, phase) => Text(
                       [
                         PartyAudienceText.label(party, phase),
-                        '${party.posts.length} ${party.posts.length == 1 ? 'post' : 'posts'}',
+                        context.l10n.postCount(party.posts.length),
                         if (party.privacy != PartyPrivacy.public) party.privacy.label,
                       ].join(' · '),
                       style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -133,8 +134,8 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
             ),
           ),
           if (party.posts.isEmpty)
-            const SliverToBoxAdapter(
-              child: EmptyState(icon: Icons.photo_library_outlined, title: 'No posts yet', message: 'The cover is shown until the first contribution.'),
+            SliverToBoxAdapter(
+              child: EmptyState(icon: Icons.photo_library_outlined, title: context.l10n.noPostsYet, message: context.l10n.coverShownUntilFirst),
             ),
           SliverGrid.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 2, crossAxisSpacing: 2),
@@ -175,11 +176,11 @@ class _UploadButton extends StatelessWidget {
     final style = FilledButton.styleFrom(minimumSize: const Size.fromHeight(48));
     return switch (phase) {
       CountdownPhase.live => FilledButton.icon(
-          style: style, onPressed: onPressed, icon: const Icon(Icons.add_photo_alternate_outlined), label: const Text('Add photo / video')),
+          style: style, onPressed: onPressed, icon: const Icon(Icons.add_photo_alternate_outlined), label: Text(context.l10n.addPhotoVideo)),
       CountdownPhase.upcoming =>
-        FilledButton.icon(style: style, onPressed: null, icon: const Icon(Icons.schedule), label: Text('Uploads open $opensAt')),
+        FilledButton.icon(style: style, onPressed: null, icon: const Icon(Icons.schedule), label: Text(context.l10n.uploadsOpenAt(opensAt))),
       CountdownPhase.closed =>
-        FilledButton.icon(style: style, onPressed: null, icon: const Icon(Icons.lock_outline), label: const Text('Uploads closed')),
+        FilledButton.icon(style: style, onPressed: null, icon: const Icon(Icons.lock_outline), label: Text(context.l10n.uploadsClosed)),
     };
   }
 }
@@ -191,11 +192,11 @@ class _PrivatePartyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(leading: const AppBackButton()),
-        body: const Center(
+        body: Center(
           child: EmptyState(
             icon: Icons.lock_outline,
-            title: 'This Party is private',
-            message: 'Only approved members can see it. Ask the host for an invite — invites appear in Inbox › Activity.',
+            title: context.l10n.partyPrivate,
+            message: context.l10n.partyPrivateMessage,
           ),
         ),
       );

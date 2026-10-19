@@ -7,6 +7,7 @@ import '../countdown/countdown_style.dart';
 import '../countdown/photo_countdown_overlay.dart';
 import 'feed_media_view.dart';
 import 'page_dots.dart';
+import '../../l10n/l10n.dart';
 
 /// The photo-backed countdown area of a Party.
 ///
@@ -236,7 +237,7 @@ class _AutoAdvanceButton extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
         button: true,
         toggled: enabled,
-        label: enabled ? 'Pause auto-advance' : 'Play auto-advance',
+        label: enabled ? context.l10n.pauseAutoAdvance : context.l10n.playAutoAdvance,
         child: InkResponse(
           onTap: onPressed,
           radius: 24,

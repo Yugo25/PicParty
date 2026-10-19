@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n.dart';
 import '../theme/theme_controller.dart';
 
 /// System / Light / Dark choice, saved across launches. "System" follows the
@@ -6,19 +7,19 @@ import '../theme/theme_controller.dart';
 class AppearancePicker extends StatelessWidget {
   const AppearancePicker({super.key});
 
-  static const _options = [
-    (ThemeMode.system, 'System', 'Match your device setting', Icons.brightness_auto_outlined),
-    (ThemeMode.light, 'Light', 'White background', Icons.light_mode_outlined),
-    (ThemeMode.dark, 'Dark', 'Black background', Icons.dark_mode_outlined),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l = context.l10n;
+    final options = [
+      (ThemeMode.system, l.appearanceSystem, l.appearanceSystemDescription, Icons.brightness_auto_outlined),
+      (ThemeMode.light, l.appearanceLight, l.appearanceLightDescription, Icons.light_mode_outlined),
+      (ThemeMode.dark, l.appearanceDark, l.appearanceDarkDescription, Icons.dark_mode_outlined),
+    ];
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: ThemeController.instance,
       builder: (context, mode, _) => Column(children: [
-        for (final (value, label, description, icon) in _options)
+        for (final (value, label, description, icon) in options)
           Semantics(
             inMutuallyExclusiveGroup: true,
             checked: value == mode,

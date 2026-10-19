@@ -16,6 +16,7 @@ import '../../widgets/feed/author_avatar.dart';
 import '../../widgets/feed/party_menu_sheet.dart';
 import '../../widgets/party/party_grid_card.dart';
 import '../../widgets/people/follow_button.dart';
+import '../../l10n/l10n.dart';
 
 enum _ExploreTab { parties, people }
 
@@ -172,10 +173,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   Expanded(
                     child: Semantics(
                       header: true,
-                      child: Text('Explore', style: theme.textTheme.headlineMedium?.copyWith(fontSize: Tokens.pageTitleSize, fontWeight: FontWeight.w800)),
+                      child: Text(context.l10n.explore, style: theme.textTheme.headlineMedium?.copyWith(fontSize: Tokens.pageTitleSize, fontWeight: FontWeight.w800)),
                     ),
                   ),
-                  if (parties) IconButton(onPressed: _openFilters, icon: const Icon(Icons.tune), tooltip: 'Sort and filter'),
+                  if (parties) IconButton(onPressed: _openFilters, icon: const Icon(Icons.tune), tooltip: context.l10n.sortAndFilter),
                 ]),
               ),
             ),
@@ -185,7 +186,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 child: AppSearchField(
                   controller: _search,
                   focusNode: _searchFocus,
-                  hint: 'Search parties or people',
+                  hint: context.l10n.searchPartiesOrPeople,
                   onChanged: _onSearchChanged,
                 ),
               ),
@@ -196,7 +197,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 child: UnderlineTabs<_ExploreTab>(
                   values: _ExploreTab.values,
                   selected: _tab,
-                  labelOf: (t) => t == _ExploreTab.parties ? 'Parties' : 'People',
+                  labelOf: (t) => t == _ExploreTab.parties ? context.l10n.parties : context.l10n.people,
                   onSelected: _setTab,
                   fontSize: 16,
                 ),
@@ -216,7 +217,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 child: TextFilters<String?>(
                   values: const [null, ...PartyCategories.ids],
                   selected: _query.category,
-                  labelOf: (c) => c == null ? 'All' : PartyCategories.label(c),
+                  labelOf: (c) => c == null ? context.l10n.all : PartyCategories.label(c),
                   onSelected: (c) => _setQuery(_query.copyWith(category: c, clearCategory: c == null)),
                 ),
               ),
@@ -282,17 +283,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
     if (!parties) {
       return EmptyState(
         icon: Icons.person_search_outlined,
-        title: 'No people found',
-        message: _query.text.isEmpty ? null : 'Nobody matches “${_query.text}”.',
+        title: context.l10n.noPeopleFound,
+        message: _query.text.isEmpty ? null : context.l10n.nobodyMatches(_query.text),
       );
     }
     final filtered = _query.category != null || _query.view != PartyView.everything;
     return EmptyState(
       icon: Icons.search_off,
-      title: 'No Parties found',
-      message: _query.text.isNotEmpty ? 'Nothing matches “${_query.text}” with these filters.' : 'Nothing here right now with these filters.',
+      title: context.l10n.noPartiesFound,
+      message: _query.text.isNotEmpty ? context.l10n.nothingMatchesFilters(_query.text) : context.l10n.nothingWithFilters,
       action: filtered
-          ? OutlinedButton(onPressed: () => _setQuery(PartyQuery(text: _query.text, view: PartyView.everything)), child: const Text('Show everything'))
+          ? OutlinedButton(onPressed: () => _setQuery(PartyQuery(text: _query.text, view: PartyView.everything)), child: Text(context.l10n.showEverything))
           : null,
     );
   }
@@ -355,9 +356,9 @@ class _FilterSheetState extends State<_FilterSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Sort & filter', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+            Text(context.l10n.sortFilterTitle, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 16),
-            Text('Show', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+            Text(context.l10n.show, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
             for (final v in PartyView.values)
               Semantics(
                 inMutuallyExclusiveGroup: true,
@@ -379,21 +380,21 @@ class _FilterSheetState extends State<_FilterSheet> {
                 ),
               ),
             const SizedBox(height: 12),
-            Text('Category', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+            Text(context.l10n.fieldCategory, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
             const SizedBox(height: 10),
             Wrap(spacing: 8, runSpacing: 8, children: [
-              Pill(label: 'All', selected: _q.category == null, onTap: () => _set(_q.copyWith(clearCategory: true))),
+              Pill(label: context.l10n.all, selected: _q.category == null, onTap: () => _set(_q.copyWith(clearCategory: true))),
               for (final c in PartyCategories.ids)
                 Pill(label: PartyCategories.label(c), selected: _q.category == c, onTap: () => _set(_q.copyWith(category: c))),
             ]),
             const SizedBox(height: 20),
             Row(children: [
-              TextButton(onPressed: () => _set(PartyQuery(text: _q.text)), child: const Text('Reset')),
+              TextButton(onPressed: () => _set(PartyQuery(text: _q.text)), child: Text(context.l10n.reset)),
               const Spacer(),
               FilledButton(
                 style: FilledButton.styleFrom(minimumSize: const Size(120, Tokens.controlHeight)),
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Done'),
+                child: Text(context.l10n.done),
               ),
             ]),
           ],

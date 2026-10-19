@@ -15,6 +15,7 @@ import '../../widgets/feed/author_avatar.dart';
 import '../../widgets/party/party_image.dart';
 import '../../widgets/people/follow_button.dart';
 import '../media_detail/post_viewer_screen.dart';
+import '../../l10n/l10n.dart';
 
 /// Invites, likes, comments, follows and Party reminders, grouped by day.
 class ActivityTab extends StatefulWidget {
@@ -95,8 +96,8 @@ class _ActivityTabState extends State<ActivityTab> {
                     : ListView(
                         padding: const EdgeInsets.only(bottom: 16),
                         children: [
-                          if (today.isNotEmpty) ...[const _SectionTitle('Today'), for (final a in today) _ActivityRow(item: a)],
-                          if (earlier.isNotEmpty) ...[const _SectionTitle('Earlier'), for (final a in earlier) _ActivityRow(item: a)],
+                          if (today.isNotEmpty) ...[_SectionTitle(context.l10n.today), for (final a in today) _ActivityRow(item: a)],
+                          if (earlier.isNotEmpty) ...[_SectionTitle(context.l10n.earlier), for (final a in earlier) _ActivityRow(item: a)],
                         ],
                       ),
       ),
@@ -104,10 +105,10 @@ class _ActivityTabState extends State<ActivityTab> {
   }
 
   Widget _empty() => switch (_filter) {
-        ActivityFilter.all => const EmptyState(icon: Icons.notifications_none, title: 'No activity yet', message: 'Likes, comments, follows and invites will show up here.'),
-        ActivityFilter.invites => const EmptyState(icon: Icons.mail_outline, title: 'No invites', message: 'When someone invites you to a Party, it shows up here.'),
+        ActivityFilter.all => EmptyState(icon: Icons.notifications_none, title: context.l10n.noActivity, message: context.l10n.noActivityMessage),
+        ActivityFilter.invites => EmptyState(icon: Icons.mail_outline, title: context.l10n.noInvites, message: context.l10n.noInvitesMessage),
         ActivityFilter.interactions =>
-          const EmptyState(icon: Icons.favorite_border, title: 'No interactions yet', message: 'Likes, comments and new followers will show up here.'),
+          EmptyState(icon: Icons.favorite_border, title: context.l10n.noInteractions, message: context.l10n.noInteractionsMessage),
       };
 }
 
@@ -156,7 +157,7 @@ class _ActivityRow extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: scheme.outlineVariant)),
-            child: const Icon(Icons.schedule, size: 22, semanticLabel: 'Reminder'),
+            child: Icon(Icons.schedule, size: 22, semanticLabel: context.l10n.reminder),
           );
 
     Widget thumb(Widget child, VoidCallback onTap) => GestureDetector(
@@ -172,16 +173,16 @@ class _ActivityRow extends StatelessWidget {
     switch (item.kind) {
       case ActivityKind.invite:
         text = Text.rich(TextSpan(style: base, children: [
-          TextSpan(text: actor?.name ?? 'Someone', style: bold),
-          const TextSpan(text: ' invited you to '),
-          TextSpan(text: party?.title ?? 'a Party', style: bold),
+          TextSpan(text: actor?.name ?? context.l10n.someone, style: bold),
+          TextSpan(text: context.l10n.activityInvited),
+          TextSpan(text: party?.title ?? context.l10n.aParty, style: bold),
         ]));
         trailing = time;
         if (party != null) below = _InviteBody(item: item, party: party);
       case ActivityKind.like:
         text = Text.rich(TextSpan(style: base, children: [
-          TextSpan(text: actor?.name ?? 'Someone', style: bold),
-          TextSpan(text: post?.isVideo == true ? ' liked your video' : ' liked your photo'),
+          TextSpan(text: actor?.name ?? context.l10n.someone, style: bold),
+          TextSpan(text: post?.isVideo == true ? context.l10n.activityLikedVideo : context.l10n.activityLikedPhoto),
         ]));
         if (party != null && post != null) {
           onTap = () => _openPost(context, party, post);
@@ -189,8 +190,8 @@ class _ActivityRow extends StatelessWidget {
         }
       case ActivityKind.comment:
         text = Text.rich(TextSpan(style: base, children: [
-          TextSpan(text: actor?.name ?? 'Someone', style: bold),
-          const TextSpan(text: ' commented: '),
+          TextSpan(text: actor?.name ?? context.l10n.someone, style: bold),
+          TextSpan(text: context.l10n.activityCommented),
           TextSpan(text: '“${item.comment ?? ''}”'),
         ]));
         if (party != null && post != null) {
@@ -199,8 +200,8 @@ class _ActivityRow extends StatelessWidget {
         }
       case ActivityKind.follow:
         text = Text.rich(TextSpan(style: base, children: [
-          TextSpan(text: actor?.name ?? 'Someone', style: bold),
-          const TextSpan(text: ' started following you'),
+          TextSpan(text: actor?.name ?? context.l10n.someone, style: bold),
+          TextSpan(text: context.l10n.activityFollowed),
         ]));
         if (actor != null) {
           trailing = FollowButton(user: actor);
@@ -209,16 +210,16 @@ class _ActivityRow extends StatelessWidget {
       case ActivityKind.reminder:
         // Worded from the Party's state now, never from when it was sent.
         text = party == null
-            ? Text('A Party you joined has changed', style: base)
+            ? Text(context.l10n.partyChanged, style: base)
             : PhaseBuilder(
                 startAt: party.startAt,
                 endAt: party.endAt,
                 builder: (context, phase) {
                   final now = DateTime.now();
                   final rest = switch (phase) {
-                    CountdownPhase.upcoming => ' starts ${TimeFormat.dayAndTime(party.startAt, now)}',
-                    CountdownPhase.live => ' closes ${TimeFormat.dayAndTime(party.endAt, now)}',
-                    CountdownPhase.closed => ' has ended. Uploads are closed.',
+                    CountdownPhase.upcoming => context.l10n.activityStarts(TimeFormat.dayAndTime(party.startAt, now)),
+                    CountdownPhase.live => context.l10n.activityCloses(TimeFormat.dayAndTime(party.endAt, now)),
+                    CountdownPhase.closed => context.l10n.activityEnded,
                   };
                   return Text.rich(TextSpan(style: base, children: [TextSpan(text: party.title, style: bold), TextSpan(text: rest)]));
                 },
@@ -274,7 +275,7 @@ class _InviteBodyState extends State<_InviteBody> {
       if (mounted) {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
-          ..showSnackBar(const SnackBar(content: Text('Couldn\'t send your answer. Try again.')));
+          ..showSnackBar(SnackBar(content: Text(context.l10n.answerFailed)));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -305,18 +306,18 @@ class _InviteBodyState extends State<_InviteBody> {
             return Row(children: [
               const Icon(Icons.check_circle_outline, size: 20),
               const SizedBox(width: 6),
-              const Expanded(child: Text('You joined this Party', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
-              TextButton(onPressed: () => context.push('/p/${party.id}'), child: const Text('View Party')),
+              Expanded(child: Text(context.l10n.youJoinedParty, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
+              TextButton(onPressed: () => context.push('/p/${party.id}'), child: Text(context.l10n.viewParty)),
             ]);
           }
-          if (status == InviteStatus.declined) return Text('Invite declined', style: muted);
-          if (phase == CountdownPhase.closed) return Text('This Party has ended', style: muted);
+          if (status == InviteStatus.declined) return Text(context.l10n.inviteDeclined, style: muted);
+          if (phase == CountdownPhase.closed) return Text(context.l10n.partyHasEnded, style: muted);
           return Row(children: [
             Expanded(
               child: FilledButton(
                 style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(40)),
                 onPressed: _busy ? null : () => _respond(true),
-                child: const Text('Accept'),
+                child: Text(context.l10n.accept),
               ),
             ),
             const SizedBox(width: 8),
@@ -324,7 +325,7 @@ class _InviteBodyState extends State<_InviteBody> {
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(40)),
                 onPressed: _busy ? null : () => _respond(false),
-                child: const Text('Decline'),
+                child: Text(context.l10n.decline),
               ),
             ),
           ]);

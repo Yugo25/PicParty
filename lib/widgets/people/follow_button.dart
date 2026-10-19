@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/feed/feed_author.dart';
 import '../../services/people/people_repository.dart';
+import '../../l10n/l10n.dart';
 
 /// Follow / Following toggle for a person. Updates right away and rolls back
 /// with a message if the request fails.
@@ -14,12 +15,13 @@ class FollowButton extends StatelessWidget {
 
   Future<void> _toggle(BuildContext context, bool following) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
     try {
       await PeopleRepository.instance.setFollowing(user.id, !following);
     } catch (_) {
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text('Couldn\'t ${following ? 'unfollow' : 'follow'} ${user.name}. Try again.')));
+        ..showSnackBar(SnackBar(content: Text(following ? l.unfollowFailed(user.name) : l.followFailed(user.name))));
     }
   }
 
@@ -35,18 +37,18 @@ class FollowButton extends StatelessWidget {
         return Semantics(
           button: true,
           toggled: following,
-          label: following ? 'Following ${user.name}. Tap to unfollow' : 'Follow ${user.name}',
+          label: following ? context.l10n.followingSemantics(user.name) : context.l10n.followSemantics(user.name),
           child: ExcludeSemantics(
             child: following
                 ? OutlinedButton(
                     style: OutlinedButton.styleFrom(minimumSize: size, padding: padding),
                     onPressed: () => _toggle(context, true),
-                    child: const Text('Following'),
+                    child: Text(context.l10n.following),
                   )
                 : FilledButton(
                     style: FilledButton.styleFrom(minimumSize: size, padding: padding, textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                     onPressed: () => _toggle(context, false),
-                    child: const Text('Follow'),
+                    child: Text(context.l10n.follow),
                   ),
           ),
         );

@@ -10,6 +10,7 @@ import '../../widgets/common/form_parts.dart';
 import '../../widgets/common/state_views.dart';
 import '../../widgets/feed/author_avatar.dart';
 import '../../widgets/feed/party_header_row.dart';
+import '../../l10n/l10n.dart';
 
 /// Conversation list with search.
 class MessagesTab extends StatefulWidget {
@@ -71,7 +72,7 @@ class _MessagesTabState extends State<MessagesTab> {
         padding: const EdgeInsets.fromLTRB(Tokens.gutter, 12, Tokens.gutter, 4),
         child: AppSearchField(
           controller: _search,
-          hint: 'Search messages',
+          hint: context.l10n.searchMessages,
           onChanged: (_) {
             _debounce?.cancel();
             _debounce = Timer(const Duration(milliseconds: 250), _load);
@@ -89,11 +90,11 @@ class _MessagesTabState extends State<MessagesTab> {
                           child: _search.text.isEmpty
                               ? EmptyState(
                                   icon: Icons.chat_bubble_outline,
-                                  title: 'No messages yet',
-                                  message: 'Start a conversation with someone you met at a Party.',
-                                  action: OutlinedButton(onPressed: widget.onNewMessage, child: const Text('New message')),
+                                  title: context.l10n.noMessages,
+                                  message: context.l10n.noMessagesMessage,
+                                  action: OutlinedButton(onPressed: widget.onNewMessage, child: Text(context.l10n.newMessage)),
                                 )
-                              : EmptyState(icon: Icons.search_off, title: 'No conversations match “${_search.text}”'),
+                              : EmptyState(icon: Icons.search_off, title: context.l10n.noConversationsMatch(_search.text)),
                         ),
                       )
                     : ListView.separated(
@@ -124,12 +125,12 @@ class _ConversationRow extends StatelessWidget {
       fontWeight: unread ? FontWeight.w500 : FontWeight.w400,
     );
     final preview = c.lastIsPhoto
-        ? Row(children: [Icon(Icons.image_outlined, size: 18, color: previewStyle.color), const SizedBox(width: 6), Text('Sent a photo', style: previewStyle)])
-        : Text('${c.lastFromMe ? 'You: ' : ''}${c.lastText}', maxLines: 1, overflow: TextOverflow.ellipsis, style: previewStyle);
+        ? Row(children: [Icon(Icons.image_outlined, size: 18, color: previewStyle.color), const SizedBox(width: 6), Text(context.l10n.sentPhoto, style: previewStyle)])
+        : Text('${c.lastFromMe ? context.l10n.youPrefix : ''}${c.lastText}', maxLines: 1, overflow: TextOverflow.ellipsis, style: previewStyle);
 
     return Semantics(
       button: true,
-      label: '${c.other.name}${unread ? ', ${c.unread} unread' : ''}',
+      label: unread ? context.l10n.conversationUnread(c.other.name, c.unread) : c.other.name,
       child: InkWell(
         onTap: () => context.push('/chat/${c.id}'),
         child: Padding(
@@ -162,7 +163,7 @@ class _ConversationRow extends StatelessWidget {
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(party.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
-                        Text('Shared Party', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                        Text(context.l10n.sharedParty, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
                       ]),
                     ),
                   ]),

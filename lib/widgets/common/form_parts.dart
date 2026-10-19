@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/tokens.dart';
+import '../../l10n/l10n.dart';
 
 /// Search box used in Explore and Inbox: rounded, with a clear button.
 class AppSearchField extends StatefulWidget {
@@ -50,7 +51,7 @@ class _AppSearchFieldState extends State<AppSearchField> {
         suffixIcon: widget.controller.text.isEmpty
             ? null
             : IconButton(
-                tooltip: 'Clear search',
+                tooltip: context.l10n.clearSearch,
                 icon: const Icon(Icons.close, size: 20),
                 onPressed: () {
                   widget.controller.clear();

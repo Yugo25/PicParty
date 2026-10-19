@@ -22,5 +22,515 @@
   "upload": "Upload",
   "invite": "Invite",
   "accept": "Accept",
-  "decline": "Decline"
+  "decline": "Decline",
+  "back": "Back",
+  "close": "Close",
+  "more": "More",
+  "send": "Send",
+  "save": "Save",
+  "saving": "Saving…",
+  "done": "Done",
+  "reset": "Reset",
+  "all": "All",
+  "optional": "Optional",
+  "choose": "Choose",
+  "preview": "Preview",
+  "comingSoon": "Coming soon",
+  "clearSearch": "Clear search",
+  "loading": "Loading",
+  "loadFailedDefault": "Couldn't load this. Check your connection.",
+  "somethingWentWrong": "Something went wrong",
+  "tryAgain": "Try again",
+  "loadMoreFailed": "Couldn't load more. Retry",
+  "video": "Video",
+  "photo": "Photo",
+  "mediaUnavailable": "Media unavailable",
+  "someone": "Someone",
+  "explore": "Explore",
+  "create": "Create",
+  "inbox": "Inbox",
+  "navNewActivity": "{label}, new activity",
+  "@navNewActivity": {
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "appearance": "Appearance",
+  "appearanceSystem": "System",
+  "appearanceSystemDescription": "Match your device setting",
+  "appearanceLight": "Light",
+  "appearanceLightDescription": "White background",
+  "appearanceDark": "Dark",
+  "appearanceDarkDescription": "Black background",
+  "language": "Language",
+  "languageSystem": "System",
+  "languageSystemDescription": "Chinese on a Chinese device, English otherwise",
+  "languageEnglishDescription": "English",
+  "languageChineseDescription": "Simplified Chinese",
+  "demo": "Demo",
+  "demoNotice": "This build has no server. Parties, messages and activity are sample data that stay on this device.",
+  "simulateErrors": "Simulate connection errors",
+  "simulateErrorsDescription": "Preview how lists and forms behave offline",
+  "statFollowing": "Following",
+  "followers": "Followers",
+  "followSemantics": "Follow {name}",
+  "@followSemantics": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "followingSemantics": "Following {name}. Tap to unfollow",
+  "@followingSemantics": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "followFailed": "Couldn't follow {name}. Try again.",
+  "@followFailed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "unfollowFailed": "Couldn't unfollow {name}. Try again.",
+  "@unfollowFailed": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "notifications": "Notifications",
+  "forYou": "For you",
+  "feedFollowing": "Following",
+  "comments": "Comments",
+  "noComments": "No comments yet",
+  "addComment": "Add a comment",
+  "unlike": "Unlike",
+  "feedNoPosts": "No posts yet — the cover is shown until the first contribution.",
+  "nothingHereYet": "Nothing here yet",
+  "allCaughtUp": "You're all caught up",
+  "pauseAutoAdvance": "Pause auto-advance",
+  "playAutoAdvance": "Play auto-advance",
+  "linkCopied": "Link copied",
+  "viewParty": "View Party",
+  "copyLink": "Copy link",
+  "remindMe": "Remind me",
+  "moreOptionsFor": "More options for {title}",
+  "@moreOptionsFor": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "uploadsClosed": "Uploads closed",
+  "viewMemories": "View memories",
+  "cardStartsIn": "STARTS IN",
+  "cardLeft": "LEFT",
+  "startsInSemantics": "Starts in {time}",
+  "@startsInSemantics": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "timeLeftSemantics": "{time} left",
+  "@timeLeftSemantics": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "memberCount": "{count, plural, =1{1 member} other{{count} members}}",
+  "@memberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "contributorCount": "{count, plural, =1{1 contributor} other{{count} contributors}}",
+  "@contributorCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memoryCount": "{count, plural, =1{1 memory} other{{count} memories}}",
+  "@memoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "postCount": "{count, plural, =1{1 post} other{{count} posts}}",
+  "@postCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "countdownStartsIn": "STARTS IN",
+  "countdownUploadsCloseIn": "UPLOADS CLOSE IN",
+  "countdownPartyEnded": "PARTY ENDED",
+  "countdownEnded": "Ended {when}",
+  "@countdownEnded": {
+    "placeholders": {
+      "when": {}
+    }
+  },
+  "momentToday": "Today, {time}",
+  "@momentToday": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "momentTomorrow": "Tomorrow, {time}",
+  "@momentTomorrow": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "momentYesterday": "Yesterday, {time}",
+  "@momentYesterday": {
+    "placeholders": {
+      "time": {}
+    }
+  },
+  "momentDate": "{date}, {time}",
+  "@momentDate": {
+    "placeholders": {
+      "date": {},
+      "time": {}
+    }
+  },
+  "unitDays": "{n}d",
+  "@unitDays": {
+    "placeholders": {
+      "n": {}
+    }
+  },
+  "unitHours": "{n}h",
+  "@unitHours": {
+    "placeholders": {
+      "n": {}
+    }
+  },
+  "unitMinutes": "{n}m",
+  "@unitMinutes": {
+    "placeholders": {
+      "n": {}
+    }
+  },
+  "unitSeconds": "{n}s",
+  "@unitSeconds": {
+    "placeholders": {
+      "n": {}
+    }
+  },
+  "agoNow": "now",
+  "agoMinutes": "{n}m",
+  "@agoMinutes": {
+    "placeholders": {
+      "n": {}
+    }
+  },
+  "agoHours": "{n}h",
+  "@agoHours": {
+    "placeholders": {
+      "n": {}
+    }
+  },
+  "agoDays": "{n}d",
+  "@agoDays": {
+    "placeholders": {
+      "n": {}
+    }
+  },
+  "dayToday": "today",
+  "dayTomorrow": "tomorrow",
+  "dayYesterday": "yesterday",
+  "dayAtTime": "{day} at {time}",
+  "@dayAtTime": {
+    "placeholders": {
+      "day": {},
+      "time": {}
+    }
+  },
+  "durationDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@durationDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationHours": "{count, plural, =1{1 hour} other{{count} hours}}",
+  "@durationHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinutes": "{count, plural, =1{1 minute} other{{count} minutes}}",
+  "@durationMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationUnderMinute": "less than a minute",
+  "privacyPublic": "Public",
+  "privacyPublicDescription": "Discoverable by everyone",
+  "privacyUnlisted": "Unlisted",
+  "privacyUnlistedDescription": "Anyone with the link",
+  "privacyPrivate": "Private",
+  "privacyPrivateDescription": "Approved members only",
+  "timerDigital": "Digital",
+  "timerMinimal": "Minimal",
+  "timerRing": "Ring",
+  "categoryTravel": "Travel",
+  "categoryFood": "Food",
+  "categoryMusic": "Music",
+  "categoryNature": "Nature",
+  "categoryPhotography": "Photography",
+  "categoryPets": "Pets",
+  "categoryArt": "Art",
+  "categorySports": "Sports",
+  "categoryFashion": "Fashion",
+  "categoryParty": "Party",
+  "categoryLifestyle": "Lifestyle",
+  "categoryOther": "Other",
+  "viewLive": "Live",
+  "viewLiveDescription": "Running now — uploads are open",
+  "viewTrending": "Trending",
+  "viewTrendingDescription": "Popular Parties that haven't ended",
+  "viewNewest": "New",
+  "viewNewestDescription": "Recently created, not ended",
+  "viewEndingSoon": "Ending soon",
+  "viewEndingSoonDescription": "Running now, closing soonest first",
+  "viewEverything": "Everything",
+  "viewEverythingDescription": "Includes upcoming and ended Parties",
+  "filterInvites": "Invites",
+  "filterInteractions": "Interactions",
+  "username": "Username",
+  "email": "Email",
+  "password": "Password",
+  "createAccount": "Create account",
+  "signIn": "Sign in",
+  "haveAccount": "Already have an account? Sign in",
+  "createNewAccount": "Create a new account",
+  "chatSendFailed": "Couldn't send. Your message is still in the box.",
+  "chatDemoNotice": "Demo chat — messages you send stay on this device and aren't delivered.",
+  "sayHello": "Say hello",
+  "chatStart": "This is the start of your chat with {name}.",
+  "@chatStart": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "sharedParty": "Shared Party",
+  "messageHint": "Message",
+  "notDeliveredDemo": "Not delivered · demo",
+  "custom": "Custom",
+  "durationWholeNumbers": "Use whole numbers.",
+  "durationTooShort": "A Party needs at least 1 minute.",
+  "durationTooLong": "A Party can last up to 30 days.",
+  "titleRequired": "Add a title for your Party.",
+  "titleTooLong": "Keep the title under {max} characters.",
+  "@titleTooLong": {
+    "placeholders": {
+      "max": {}
+    }
+  },
+  "startRequired": "Choose when the Party starts.",
+  "startInPast": "Choose a start time in the future.",
+  "startTooFar": "Choose a start within the next year.",
+  "photosOpenFailed": "Couldn't open your photos.",
+  "createFailed": "Couldn't create the Party. Your details are saved — check your connection and try again.",
+  "stepOf": "{step} of {total}",
+  "@stepOf": {
+    "placeholders": {
+      "step": {},
+      "total": {}
+    }
+  },
+  "stepOfSemantics": "Step {step} of {total}",
+  "@stepOfSemantics": {
+    "placeholders": {
+      "step": {},
+      "total": {}
+    }
+  },
+  "stepDetails": "Details",
+  "stepTimeStyle": "Time & style",
+  "continueAction": "Continue",
+  "creating": "Creating…",
+  "fieldTitle": "Title",
+  "titleHint": "Give your Party a name",
+  "fieldDescription": "Description",
+  "descriptionHint": "What should people share?",
+  "fieldCategory": "Category",
+  "fieldPrivacy": "Privacy",
+  "fieldStarts": "Starts",
+  "startNow": "Now",
+  "startSchedule": "Schedule",
+  "date": "Date",
+  "time": "Time",
+  "fieldDuration": "Duration",
+  "durationRange": "From 1 minute up to 30 days",
+  "days": "Days",
+  "hours": "Hours",
+  "minutes": "Minutes",
+  "fieldTimerStyle": "Timer style",
+  "coverNote": "Cover is used until the first contribution.",
+  "addCover": "Add cover",
+  "changeCover": "Change cover",
+  "durationInvalidHint": "Set a valid duration to see when it ends.",
+  "endsAt": "Ends {when}",
+  "@endsAt": {
+    "placeholders": {
+      "when": {}
+    }
+  },
+  "startsAndRuns": "Starts {start} · runs {duration}",
+  "@startsAndRuns": {
+    "placeholders": {
+      "start": {},
+      "duration": {}
+    }
+  },
+  "durationFromNow": "{duration} from now",
+  "@durationFromNow": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "timerStyleSemantics": "{style} timer",
+  "@timerStyleSemantics": {
+    "placeholders": {
+      "style": {}
+    }
+  },
+  "sortAndFilter": "Sort and filter",
+  "sortFilterTitle": "Sort & filter",
+  "searchPartiesOrPeople": "Search parties or people",
+  "parties": "Parties",
+  "people": "People",
+  "noPeopleFound": "No people found",
+  "nobodyMatches": "Nobody matches “{query}”.",
+  "@nobodyMatches": {
+    "placeholders": {
+      "query": {}
+    }
+  },
+  "noPartiesFound": "No Parties found",
+  "nothingMatchesFilters": "Nothing matches “{query}” with these filters.",
+  "@nothingMatchesFilters": {
+    "placeholders": {
+      "query": {}
+    }
+  },
+  "nothingWithFilters": "Nothing here right now with these filters.",
+  "showEverything": "Show everything",
+  "show": "Show",
+  "today": "Today",
+  "earlier": "Earlier",
+  "noActivity": "No activity yet",
+  "noActivityMessage": "Likes, comments, follows and invites will show up here.",
+  "noInvites": "No invites",
+  "noInvitesMessage": "When someone invites you to a Party, it shows up here.",
+  "noInteractions": "No interactions yet",
+  "noInteractionsMessage": "Likes, comments and new followers will show up here.",
+  "reminder": "Reminder",
+  "activityInvited": " invited you to ",
+  "aParty": "a Party",
+  "activityLikedVideo": " liked your video",
+  "activityLikedPhoto": " liked your photo",
+  "activityCommented": " commented: ",
+  "activityFollowed": " started following you",
+  "partyChanged": "A Party you joined has changed",
+  "activityStarts": " starts {when}",
+  "@activityStarts": {
+    "placeholders": {
+      "when": {}
+    }
+  },
+  "activityCloses": " closes {when}",
+  "@activityCloses": {
+    "placeholders": {
+      "when": {}
+    }
+  },
+  "activityEnded": " has ended. Uploads are closed.",
+  "answerFailed": "Couldn't send your answer. Try again.",
+  "youJoinedParty": "You joined this Party",
+  "inviteDeclined": "Invite declined",
+  "partyHasEnded": "This Party has ended",
+  "newMessage": "New message",
+  "messages": "Messages",
+  "searchPeople": "Search people",
+  "searchMessages": "Search messages",
+  "noMessages": "No messages yet",
+  "noMessagesMessage": "Start a conversation with someone you met at a Party.",
+  "noConversationsMatch": "No conversations match “{query}”",
+  "@noConversationsMatch": {
+    "placeholders": {
+      "query": {}
+    }
+  },
+  "sentPhoto": "Sent a photo",
+  "youPrefix": "You: ",
+  "conversationUnread": "{name}, {count} unread",
+  "@conversationUnread": {
+    "placeholders": {
+      "name": {},
+      "count": {}
+    }
+  },
+  "uploadsClosedForParty": "Uploads for this Party are closed",
+  "partyNotFound": "Party not found",
+  "partyMaybeRemoved": "It may have been removed.",
+  "noPostsYet": "No posts yet",
+  "coverShownUntilFirst": "The cover is shown until the first contribution.",
+  "addPhotoVideo": "Add photo / video",
+  "uploadsOpenAt": "Uploads open {when}",
+  "@uploadsOpenAt": {
+    "placeholders": {
+      "when": {}
+    }
+  },
+  "partyPrivate": "This Party is private",
+  "partyPrivateMessage": "Only approved members can see it. Ask the host for an invite — invites appear in Inbox › Activity.",
+  "loadProfileFailed": "Couldn't load your profile.",
+  "usernameRule": "Use 3–30 lowercase letters, numbers, dots or underscores.",
+  "savedDemo": "Saved for this session (demo)",
+  "profileUpdated": "Profile updated",
+  "saveFailed": "Couldn't save. Your changes are still here — try again.",
+  "editProfile": "Edit profile",
+  "name": "Name",
+  "bio": "Bio",
+  "profileLinkCopied": "Profile link copied",
+  "profileNotAvailable": "Profile not available",
+  "posts": "Posts",
+  "memories": "Memories",
+  "created": "Created",
+  "joined": "Joined",
+  "noLiveParties": "No live or upcoming Parties",
+  "partiesYouHost": "Parties you host show up here while they run.",
+  "partiesYouJoin": "Parties you join show up here while they run.",
+  "createAParty": "Create a Party",
+  "recentMemories": "Recent memories",
+  "seeAll": "See all",
+  "postsYouAdd": "Photos and videos you add to Parties show up here.",
+  "postOf": "Post {index} of {total}",
+  "@postOf": {
+    "placeholders": {
+      "index": {},
+      "total": {}
+    }
+  },
+  "noMemories": "No memories yet",
+  "noMemoriesMessage": "Ended Parties are kept here with all their posts.",
+  "shareProfile": "Share profile",
+  "message": "Message"
 }

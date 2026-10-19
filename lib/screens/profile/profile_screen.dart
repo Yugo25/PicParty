@@ -19,6 +19,7 @@ import '../../widgets/party/party_image.dart';
 import '../../widgets/people/follow_button.dart';
 import '../media_detail/post_viewer_screen.dart';
 import '../../widgets/common/app_back_button.dart';
+import '../../l10n/l10n.dart';
 
 enum _ProfileTab { parties, posts, memories }
 
@@ -82,10 +83,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _shareProfile(UserProfile p) async {
     final messenger = ScaffoldMessenger.of(context);
+    final copied = context.l10n.profileLinkCopied;
     await Clipboard.setData(ClipboardData(text: 'https://picparty.app/u/${p.user.username}'));
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Profile link copied'), duration: Duration(seconds: 2)));
+      ..showSnackBar(SnackBar(content: Text(copied), duration: const Duration(seconds: 2)));
   }
 
   Future<void> _message(UserProfile p) async {
@@ -107,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final Widget body;
     if (profile == null) {
       body = _failed
-          ? Center(child: _own ? ErrorState(onRetry: _retry) : const EmptyState(icon: Icons.person_off_outlined, title: 'Profile not available'))
+          ? Center(child: _own ? ErrorState(onRetry: _retry) : EmptyState(icon: Icons.person_off_outlined, title: context.l10n.profileNotAvailable))
           : const LoadingState();
     } else {
       body = _content(context, profile);
@@ -153,9 +155,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               values: _ProfileTab.values,
               selected: _tab,
               labelOf: (t) => switch (t) {
-                _ProfileTab.parties => 'Parties',
-                _ProfileTab.posts => 'Posts',
-                _ProfileTab.memories => 'Memories',
+                _ProfileTab.parties => context.l10n.parties,
+                _ProfileTab.posts => context.l10n.posts,
+                _ProfileTab.memories => context.l10n.memories,
               },
               onSelected: (t) => setState(() => _tab = t),
               fontSize: 16,
@@ -181,7 +183,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: PillFilters<bool>(
             values: const [true, false],
             selected: _showCreated,
-            labelOf: (created) => created ? 'Created' : 'Joined',
+            labelOf: (created) => created ? context.l10n.created : context.l10n.joined,
             onSelected: (created) => setState(() => _showCreated = created),
           ),
         ),
@@ -190,11 +192,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         SliverToBoxAdapter(
           child: EmptyState(
             icon: Icons.celebration_outlined,
-            title: 'No live or upcoming Parties',
+            title: context.l10n.noLiveParties,
             message: _showCreated
-                ? (_own ? 'Parties you host show up here while they run.' : null)
-                : (_own ? 'Parties you join show up here while they run.' : null),
-            action: _own && _showCreated ? FilledButton(onPressed: () => context.push('/create'), child: const Text('Create a Party')) : null,
+                ? (_own ? context.l10n.partiesYouHost : null)
+                : (_own ? context.l10n.partiesYouJoin : null),
+            action: _own && _showCreated ? FilledButton(onPressed: () => context.push('/create'), child: Text(context.l10n.createAParty)) : null,
           ),
         )
       else
@@ -215,10 +217,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(Tokens.gutter, 8, 4, 4),
             child: Row(children: [
-              Expanded(child: Semantics(header: true, child: Text('Recent memories', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)))),
+              Expanded(child: Semantics(header: true, child: Text(context.l10n.recentMemories, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)))),
               TextButton(
                 onPressed: () => setState(() => _tab = _ProfileTab.memories),
-                child: const Row(mainAxisSize: MainAxisSize.min, children: [Text('See all'), Icon(Icons.chevron_right, size: 20)]),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [Text(context.l10n.seeAll), const Icon(Icons.chevron_right, size: 20)]),
               ),
             ]),
           ),
@@ -248,8 +250,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         SliverToBoxAdapter(
           child: EmptyState(
             icon: Icons.photo_library_outlined,
-            title: 'No posts yet',
-            message: _own ? 'Photos and videos you add to Parties show up here.' : null,
+            title: context.l10n.noPostsYet,
+            message: _own ? context.l10n.postsYouAdd : null,
           ),
         ),
       ];
@@ -262,7 +264,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           itemCount: posts.length,
           itemBuilder: (context, i) => Semantics(
             button: true,
-            label: 'Post ${i + 1} of ${posts.length}',
+            label: context.l10n.postOf(i + 1, posts.length),
             child: GestureDetector(onTap: () => _openPost(posts[i]), child: PostThumbnail(post: posts[i])),
           ),
         ),
@@ -272,9 +274,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   List<Widget> _memoriesTab(BuildContext context, List<FeedParty> memories) {
     if (memories.isEmpty) {
-      return const [
+      return [
         SliverToBoxAdapter(
-          child: EmptyState(icon: Icons.auto_awesome_outlined, title: 'No memories yet', message: 'Ended Parties are kept here with all their posts.'),
+          child: EmptyState(icon: Icons.auto_awesome_outlined, title: context.l10n.noMemories, message: context.l10n.noMemoriesMessage),
         ),
       ];
     }
@@ -342,18 +344,18 @@ class _Header extends StatelessWidget {
             ),
           ),
           if (own) ...[
-            IconButton(onPressed: onShare, icon: const Icon(Icons.ios_share), tooltip: 'Share profile'),
-            IconButton(onPressed: () => context.push('/settings'), icon: const Icon(Icons.settings_outlined), tooltip: 'Settings'),
+            IconButton(onPressed: onShare, icon: const Icon(Icons.ios_share), tooltip: context.l10n.shareProfile),
+            IconButton(onPressed: () => context.push('/settings'), icon: const Icon(Icons.settings_outlined), tooltip: context.l10n.settings),
           ],
         ]),
         const SizedBox(height: 18),
         IntrinsicHeight(
           child: Row(children: [
-            Expanded(child: _Stat(value: partyCount, label: 'Parties')),
+            Expanded(child: _Stat(value: partyCount, label: context.l10n.parties)),
             VerticalDivider(color: scheme.outlineVariant, width: 1, indent: 6, endIndent: 6),
-            Expanded(child: _Stat(value: profile.followers, label: 'Followers')),
+            Expanded(child: _Stat(value: profile.followers, label: context.l10n.followers)),
             VerticalDivider(color: scheme.outlineVariant, width: 1, indent: 6, endIndent: 6),
-            Expanded(child: _Stat(value: profile.following, label: 'Following')),
+            Expanded(child: _Stat(value: profile.following, label: context.l10n.statFollowing)),
           ]),
         ),
         const SizedBox(height: 16),
@@ -364,7 +366,7 @@ class _Header extends StatelessWidget {
                     style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(44)),
                     onPressed: () => context.push('/profile/edit'),
                     icon: const Icon(Icons.edit_outlined, size: 20),
-                    label: const Text('Edit profile'),
+                    label: Text(context.l10n.editProfile),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -373,7 +375,7 @@ class _Header extends StatelessWidget {
                     style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(44)),
                     onPressed: onShare,
                     icon: const Icon(Icons.ios_share, size: 20),
-                    label: const Text('Share profile'),
+                    label: Text(context.l10n.shareProfile),
                   ),
                 ),
               ]
@@ -385,7 +387,7 @@ class _Header extends StatelessWidget {
                     style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(44)),
                     onPressed: onMessage,
                     icon: const Icon(Icons.chat_bubble_outline, size: 20),
-                    label: const Text('Message'),
+                    label: Text(context.l10n.message),
                   ),
                 ),
               ]),
