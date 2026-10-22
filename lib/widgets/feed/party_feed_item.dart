@@ -4,7 +4,7 @@ import '../../config/feed_config.dart';
 import '../../models/feed/feed_party.dart';
 import '../../screens/media_detail/post_viewer_screen.dart';
 import '../../services/feed/active_party_controller.dart';
-import '../../services/mock_feed_repository.dart';
+import '../../services/feed/feed_repository.dart';
 import '../countdown/photo_countdown_overlay.dart';
 import '../party/party_image.dart';
 import 'comments_sheet.dart';
@@ -31,7 +31,7 @@ class PartyFeedItem extends StatefulWidget {
 
 class _PartyFeedItemState extends State<PartyFeedItem> {
   final _index = ValueNotifier<int>(0);
-  final _repo = MockFeedRepository.instance;
+  final _repo = FeedRepository.instance;
 
   FeedParty get _party => widget.party;
 

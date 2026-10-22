@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/feed/active_party_controller.dart';
-import '../../services/mock_feed_repository.dart';
+import '../../services/feed/feed_repository.dart';
 import '../../widgets/feed/feed_header.dart';
 import '../../widgets/feed/party_feed_list.dart';
 

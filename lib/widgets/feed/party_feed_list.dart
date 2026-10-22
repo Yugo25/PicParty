@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../config/feed_config.dart';
 import '../../models/feed/feed_party.dart';
 import '../../services/feed/active_party_controller.dart';
-import '../../services/mock_feed_repository.dart';
+import '../../services/feed/feed_repository.dart';
 import 'party_feed_item.dart';
 import '../../l10n/l10n.dart';
 
@@ -17,7 +17,7 @@ class PartyFeedList extends StatefulWidget {
 }
 
 class _PartyFeedListState extends State<PartyFeedList> {
-  final _repo = MockFeedRepository.instance;
+  final _repo = FeedRepository.instance;
   final _parties = <FeedParty>[];
   int _page = 0;
   bool _loading = false, _hasMore = true, _failed = false;
@@ -50,6 +50,25 @@ class _PartyFeedListState extends State<PartyFeedList> {
     }
   }
 
+  /// Pull to refresh: loads the first page again, keeping the list on failure.
+  Future<void> _refresh() async {
+    try {
+      final first = await _repo.fetchParties(tab: widget.tab, page: 0, pageSize: FeedConfig.feedPageSize);
+      if (!mounted) return;
+      setState(() {
+        _parties
+          ..clear()
+          ..addAll(first);
+        _page = 1;
+        _hasMore = first.length == FeedConfig.feedPageSize;
+        _failed = false;
+      });
+      _scheduleRecompute();
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.loadFailedDefault)));
+    }
+  }
+
   void _scheduleRecompute() => WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) widget.feed.recompute();
       });
@@ -58,26 +77,45 @@ class _PartyFeedListState extends State<PartyFeedList> {
   Widget build(BuildContext context) {
     if (_parties.isEmpty && _loading) return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     if (_parties.isEmpty && !_hasMore) {
-      return Center(child: Text(context.l10n.nothingHereYet, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)));
+      // Scrollable so it can still be pulled to refresh.
+      return RefreshIndicator(
+        onRefresh: _refresh,
+        child: LayoutBuilder(
+          builder: (context, constraints) => ListView(physics: const AlwaysScrollableScrollPhysics(), children: [
+            SizedBox(
+              height: constraints.maxHeight,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(context.l10n.feedEmpty, textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                ),
+              ),
+            ),
+          ]),
+        ),
+      );
     }
-    return NotificationListener<ScrollNotification>(
-      onNotification: (n) {
-        // Vertical feed scrolling only; the media PageViews also bubble
-        // horizontal notifications up here.
-        if (n.metrics.axis == Axis.vertical) widget.feed.recompute();
-        return false;
-      },
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-        child: ListView.builder(
-          key: widget.feed.viewportKey,
-          padding: const EdgeInsets.only(bottom: 16),
-          itemCount: _parties.length + 1,
-          itemBuilder: (context, i) {
-            if (i >= _parties.length - 1) WidgetsBinding.instance.addPostFrameCallback((_) => _loadMore());
-            if (i == _parties.length) return _Footer(loading: _loading, failed: _failed, hasMore: _hasMore, onRetry: _loadMore);
-            return PartyFeedItem(key: ValueKey(_parties[i].id), party: _parties[i], feed: widget.feed);
-          },
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (n) {
+          // Vertical feed scrolling only; the media PageViews also bubble
+          // horizontal notifications up here.
+          if (n.metrics.axis == Axis.vertical) widget.feed.recompute();
+          return false;
+        },
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: ListView.builder(
+            key: widget.feed.viewportKey,
+            padding: const EdgeInsets.only(bottom: 16),
+            itemCount: _parties.length + 1,
+            itemBuilder: (context, i) {
+              if (i >= _parties.length - 1) WidgetsBinding.instance.addPostFrameCallback((_) => _loadMore());
+              if (i == _parties.length) return _Footer(loading: _loading, failed: _failed, hasMore: _hasMore, onRetry: _loadMore);
+              return PartyFeedItem(key: ValueKey(_parties[i].id), party: _parties[i], feed: widget.feed);
+            },
+          ),
         ),
       ),
     );

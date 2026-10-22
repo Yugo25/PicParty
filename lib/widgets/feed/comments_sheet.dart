@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import '../../models/comment.dart';
 import '../../models/feed/feed_author.dart';
 import '../../models/feed/feed_post.dart';
-import '../../services/mock_feed_repository.dart';
+import '../../services/feed/feed_repository.dart';
+import '../common/form_parts.dart';
+import '../common/state_views.dart';
 import 'author_avatar.dart';
 import '../../l10n/l10n.dart';
 
-/// Shows the comments of one post (mock data) in a bottom sheet.
+/// Shows the comments of one post in a bottom sheet.
 Future<void> showCommentsSheet(BuildContext context, FeedPost post) => showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -24,7 +27,16 @@ class _CommentsSheet extends StatefulWidget {
 
 class _CommentsSheetState extends State<_CommentsSheet> {
   final _input = TextEditingController();
-  final _repo = MockFeedRepository.instance;
+  final _repo = FeedRepository.instance;
+  List<Comment>? _comments;
+  bool _failed = false, _sending = false;
+  String? _sendError;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
 
   @override
   void dispose() {
@@ -32,17 +44,39 @@ class _CommentsSheetState extends State<_CommentsSheet> {
     super.dispose();
   }
 
-  void _send() {
+  Future<void> _load() async {
+    if (_failed) setState(() => _failed = false);
+    try {
+      final list = await _repo.comments(widget.post);
+      if (mounted) setState(() => _comments = list);
+    } catch (_) {
+      if (mounted) setState(() => _failed = true);
+    }
+  }
+
+  Future<void> _send() async {
     final text = _input.text.trim();
-    if (text.isEmpty) return;
-    setState(() => _repo.addComment(widget.post, text));
-    _input.clear();
+    if (text.isEmpty || _sending) return;
+    setState(() {
+      _sending = true;
+      _sendError = null;
+    });
+    try {
+      await _repo.addComment(widget.post, text);
+      _input.clear();
+      await _load();
+    } catch (_) {
+      // The text stays in the box so it can be sent again.
+      if (mounted) setState(() => _sendError = context.l10n.commentFailed);
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final comments = _repo.comments(widget.post);
+    final comments = _comments;
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: SizedBox(
@@ -53,7 +87,9 @@ class _CommentsSheetState extends State<_CommentsSheet> {
             const SizedBox(height: 8),
             const Divider(),
             Expanded(
-              child: comments.isEmpty
+              child: comments == null
+                  ? (_failed ? Center(child: ErrorState(onRetry: _load)) : const LoadingState())
+                  : comments.isEmpty
                   ? Center(child: Text(context.l10n.noComments, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)))
                   : ListView.builder(
                       itemCount: comments.length,
@@ -68,6 +104,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                     ),
             ),
             const Divider(),
+            if (_sendError != null) Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: FieldError(_sendError)),
             SafeArea(
               top: false,
               child: Padding(
@@ -83,7 +120,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                         decoration: InputDecoration(hintText: context.l10n.addComment, border: InputBorder.none, counterText: ''),
                       ),
                     ),
-                    IconButton(onPressed: _send, icon: const Icon(Icons.send_outlined), tooltip: context.l10n.send),
+                    IconButton(onPressed: _sending ? null : _send, icon: const Icon(Icons.send_outlined), tooltip: context.l10n.send),
                   ],
                 ),
               ),

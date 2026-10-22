@@ -5,11 +5,10 @@ import '../mock/mock_network.dart';
 import '../mock/mock_people.dart';
 import 'people_repository.dart';
 
-/// Demo people and follows, kept in memory for this session.
+/// Demo people and follows, kept in memory for this session (demo mode).
 ///
-/// The signed-in profile still comes from [ProfileRepository] (its demo
-/// profile in demo mode, the real one otherwise); only follows and other
-/// people are mocked.
+/// The signed-in profile comes from [ProfileRepository]'s demo profile; follows
+/// and other people are mocked.
 class MockPeopleRepository extends PeopleRepository {
   final _following = <String>{'u1', 'u2'};
   static const _followersOfMe = {'u4', 'u6', 'u8'};

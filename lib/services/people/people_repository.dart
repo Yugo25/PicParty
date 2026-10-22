@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
+import '../../config/app_config.dart';
 import '../../models/feed/feed_author.dart';
 import 'mock_people_repository.dart';
+import 'supabase_people_repository.dart';
 
 /// A profile page's header data.
 @immutable
@@ -15,8 +17,8 @@ class UserProfile {
 /// People, profiles and follows. Notifies when follows or the current
 /// profile change.
 abstract class PeopleRepository extends ChangeNotifier {
-  /// The repository the app uses. Swap for an API-backed one later.
-  static PeopleRepository instance = MockPeopleRepository();
+  /// Demo people without a backend; Supabase otherwise.
+  static PeopleRepository instance = AppConfig.demoMode ? MockPeopleRepository() : SupabasePeopleRepository();
 
   String get currentUserId;
 

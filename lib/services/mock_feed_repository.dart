@@ -1,19 +1,22 @@
-import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/comment.dart';
 import '../models/feed/feed_author.dart';
 import '../models/feed/feed_party.dart';
 import '../models/feed/feed_post.dart';
 import '../models/feed/party_options.dart';
+import '../repositories/party_repository.dart';
+import 'feed/feed_repository.dart';
+import 'mock/mock_network.dart';
 import 'mock/mock_people.dart';
 
-enum FeedTab { forYou, following }
+export 'feed/feed_repository.dart' show FeedTab;
 
 /// In-memory stand-in for the Party / post backend (demo data only).
 ///
 /// Photos come from picsum.photos (Unsplash images) requested at the size they
 /// are displayed at. Times are relative to app start so every state — upcoming,
 /// live (minutes / hours / days left) and closed — is always visible.
-class MockFeedRepository extends ChangeNotifier {
+class MockFeedRepository extends FeedRepository {
   MockFeedRepository._();
   static final instance = MockFeedRepository._();
 
@@ -30,6 +33,7 @@ class MockFeedRepository extends ChangeNotifier {
   ///
   /// Only Parties that are public, or that the user hosts / is a member of,
   /// appear here — unlisted and private Parties are never "discovered".
+  @override
   Future<List<FeedParty>> fetchParties({required FeedTab tab, required int page, required int pageSize}) async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
     final source = _parties.where((p) => p.posts.isNotEmpty || p.thumbnailUrl != null || p.coverLocalPath != null).where((p) {
@@ -39,6 +43,7 @@ class MockFeedRepository extends ChangeNotifier {
     return source.skip(page * pageSize).take(pageSize).toList();
   }
 
+  @override
   FeedParty? party(String id) {
     for (final p in _parties) {
       if (p.id == id) return p;
@@ -46,10 +51,28 @@ class MockFeedRepository extends ChangeNotifier {
     return null;
   }
 
+  @override
+  Future<FeedParty?> loadParty(String id) async => party(id);
+
   /// Public and unlisted Parties open for anyone with the link; private ones
   /// only for the host and members.
+  @override
   bool canView(FeedParty party, {String userId = MockPeople.meId}) =>
       party.privacy != PartyPrivacy.private || party.hasMember(userId);
+
+  /// Others only see what the viewer is allowed to open.
+  @override
+  Future<ProfileParties> partiesOf(String userId) async {
+    bool visible(FeedParty x) => userId == MockPeople.meId || x.privacy == PartyPrivacy.public || canView(x);
+    return ProfileParties(
+      hosted: hostedBy(userId).where(visible).toList(),
+      joined: joinedBy(userId).where(visible).toList(),
+      posts: [
+        for (final post in postsBy(userId))
+          if (party(post.partyId) case final p? when visible(p)) post,
+      ],
+    );
+  }
 
   /// Adds the current user as a member (accepted invite).
   void join(String partyId) {
@@ -74,16 +97,21 @@ class MockFeedRepository extends ChangeNotifier {
   List<FeedPost> postsBy(String userId) =>
       [for (final p in _parties) ...p.posts.where((post) => post.author.id == userId)]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-  void toggleLike(FeedPost post) {
+  @override
+  Future<void> toggleLike(FeedPost post) async {
     final r = post.reactions.value;
     post.reactions.value = r.copyWith(liked: !r.liked, likeCount: r.likeCount + (r.liked ? -1 : 1));
   }
 
-  List<Comment> comments(FeedPost post) => _comments.putIfAbsent(post.id, () => _seedComments(post));
+  List<Comment> _commentsOf(FeedPost post) => _comments.putIfAbsent(post.id, () => _seedComments(post));
 
-  void addComment(FeedPost post, String text) {
+  @override
+  Future<List<Comment>> comments(FeedPost post) async => List.of(_commentsOf(post));
+
+  @override
+  Future<void> addComment(FeedPost post, String text) async {
     final now = DateTime.now().toUtc();
-    comments(post).add(Comment(
+    _commentsOf(post).add(Comment(
         id: 'c-${post.id}-${now.microsecondsSinceEpoch}',
         mediaId: post.id,
         userId: MockPeople.meId,
@@ -93,6 +121,52 @@ class MockFeedRepository extends ChangeNotifier {
         updatedAt: now));
     final r = post.reactions.value;
     post.reactions.value = r.copyWith(commentCount: r.commentCount + 1);
+  }
+
+  @override
+  Future<void> addPhoto(FeedParty party, XFile file) async => addLocalPost(party, path: file.path, video: false);
+
+  @override
+  Future<FeedParty> createParty({
+    required String title,
+    String? description,
+    String? category,
+    required PartyPrivacy privacy,
+    required TimerStyle timerStyle,
+    required DateTime startAt,
+    required Duration duration,
+    XFile? cover,
+  }) async {
+    await MockNetwork.request(const Duration(milliseconds: 600));
+    final created = await PartyRepository().create(
+      title: title,
+      description: description,
+      category: category,
+      language: 'en',
+      style: timerStyle.name,
+      privacy: privacy.name,
+      startAt: startAt,
+      durationMinutes: duration.inMinutes,
+    );
+    final party = FeedParty(
+      id: created.id,
+      title: created.title,
+      description: created.description,
+      category: created.category,
+      coverLocalPath: cover?.path,
+      contributorCount: 0,
+      memberCount: 1,
+      startAt: created.startAt,
+      endAt: created.endAt,
+      createdAt: created.createdAt,
+      posts: [],
+      privacy: privacy,
+      timerStyle: timerStyle,
+      hostId: MockPeople.meId,
+      memberIds: {MockPeople.meId},
+    );
+    addParty(party);
+    return party;
   }
 
   /// Adds a photo picked on this device to a live Party (demo only — stays in memory).

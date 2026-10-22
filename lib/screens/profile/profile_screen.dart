@@ -4,9 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../models/countdown.dart';
 import '../../models/feed/feed_party.dart';
 import '../../models/feed/feed_post.dart';
-import '../../models/feed/party_options.dart';
 import '../../services/inbox/inbox_repository.dart';
-import '../../services/mock_feed_repository.dart';
+import '../../services/feed/feed_repository.dart';
 import '../../services/people/people_repository.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/common/filters.dart';
@@ -35,9 +34,10 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _people = PeopleRepository.instance;
-  final _feed = MockFeedRepository.instance;
+  final _feed = FeedRepository.instance;
 
   UserProfile? _profile;
+  ProfileParties? _parties;
   bool _failed = false;
   _ProfileTab _tab = _ProfileTab.parties;
   bool _showCreated = true;
@@ -48,27 +48,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _people.addListener(_load);
-    _feed.addListener(_changed);
+    _feed.addListener(_load);
     _load();
   }
 
   @override
   void dispose() {
     _people.removeListener(_load);
-    _feed.removeListener(_changed);
+    _feed.removeListener(_load);
     super.dispose();
-  }
-
-  void _changed() {
-    if (mounted) setState(() {});
   }
 
   Future<void> _load() async {
     try {
       final p = _own ? await _people.currentProfile() : await _people.profile(widget.userId!);
+      final parties = p == null ? null : await _feed.partiesOf(p.user.id);
       if (!mounted) return;
       setState(() {
         _profile = p;
+        _parties = parties;
         _failed = p == null;
       });
     } catch (_) {
@@ -91,49 +89,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _message(UserProfile p) async {
-    final id = await InboxRepository.instance.conversationWith(p.user);
-    if (mounted) context.push('/chat/$id');
+    final messenger = ScaffoldMessenger.of(context);
+    final unavailable = context.l10n.messagesNotConnected;
+    try {
+      final id = await InboxRepository.instance.conversationWith(p.user);
+      if (mounted) context.push('/chat/$id');
+    } catch (_) {
+      // Messages aren't connected to the server yet.
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(unavailable)));
+    }
   }
 
   void _openParty(FeedParty party) => context.push('/p/${party.id}');
 
-  void _openPost(FeedPost post) {
-    final party = _feed.party(post.partyId);
-    if (party == null) return;
-    Navigator.of(context, rootNavigator: true).push(PostViewerScreen.route(party: party, initialIndex: party.posts.indexOf(post)));
+  /// Opens the post among all of its Party's posts.
+  Future<void> _openPost(FeedPost post) async {
+    FeedParty? party;
+    try {
+      party = await _feed.loadParty(post.partyId);
+    } catch (_) {
+      party = _feed.party(post.partyId);
+    }
+    if (party == null || !mounted) return;
+    final index = party.posts.indexWhere((x) => x.id == post.id);
+    Navigator.of(context, rootNavigator: true).push(PostViewerScreen.route(party: party, initialIndex: index < 0 ? 0 : index));
   }
 
   @override
   Widget build(BuildContext context) {
     final profile = _profile;
+    final parties = _parties;
     final Widget body;
-    if (profile == null) {
+    if (profile == null || parties == null) {
       body = _failed
           ? Center(child: _own ? ErrorState(onRetry: _retry) : EmptyState(icon: Icons.person_off_outlined, title: context.l10n.profileNotAvailable))
           : const LoadingState();
     } else {
-      body = _content(context, profile);
+      body = _content(context, profile, parties);
     }
     if (_own) return SafeArea(bottom: false, child: body);
     return Scaffold(appBar: AppBar(leading: const AppBackButton(), title: Text(profile?.user.handle ?? '', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600))), body: body);
   }
 
-  Widget _content(BuildContext context, UserProfile p) {
-    final id = p.user.id;
+  Widget _content(BuildContext context, UserProfile p, ProfileParties data) {
     final now = DateTime.now();
     bool closed(FeedParty x) => CountdownSnapshot.at(start: x.startAt, end: x.endAt, now: now).phase == CountdownPhase.closed;
-    // Others only see what the viewer is allowed to open.
-    bool visible(FeedParty x) => _own || x.privacy == PartyPrivacy.public || _feed.canView(x);
 
-    final hosted = _feed.hostedBy(id).where(visible).toList();
-    final joined = _feed.joinedBy(id).where(visible).toList();
+    final hosted = data.hosted;
+    final joined = data.joined;
     int byTime(FeedParty a, FeedParty b) => a.endAt.compareTo(b.endAt);
     final active = (_showCreated ? hosted : joined).where((x) => !closed(x)).toList()..sort(byTime);
 
-    final posts = _feed.postsBy(id).where((post) {
-      final party = _feed.party(post.partyId);
-      return party != null && visible(party);
-    }).toList();
+    final posts = data.posts;
 
     final memoryIds = <String>{};
     final memories = [

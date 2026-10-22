@@ -1,6 +1,8 @@
+import '../../config/app_config.dart';
 import '../../models/feed/feed_author.dart';
 import '../../models/feed/feed_party.dart';
 import 'mock_explore_repository.dart';
+import 'supabase_explore_repository.dart';
 import '../../l10n/l10n.dart';
 
 /// Which Parties Explore lists, and in what order.
@@ -62,8 +64,8 @@ class PartyQuery {
 
 /// Search and discovery. Only public Parties are ever returned.
 abstract class ExploreRepository {
-  /// The repository the app uses. Swap for an API-backed one later.
-  static ExploreRepository instance = MockExploreRepository();
+  /// Demo data without a backend; Supabase otherwise.
+  static ExploreRepository instance = AppConfig.demoMode ? MockExploreRepository() : SupabaseExploreRepository();
 
   Future<List<FeedParty>> parties(PartyQuery query, {required int page, required int pageSize});
 
