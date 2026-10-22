@@ -1,3 +1,4 @@
+import 'package:image_picker/image_picker.dart';
 import '../../config/app_config.dart';
 import '../../models/feed/feed_author.dart';
 import '../../repositories/profile_repository.dart';
@@ -92,6 +93,21 @@ class MockPeopleRepository extends PeopleRepository {
     _me = UserProfile(
       user: FeedAuthor(id: me.user.id, username: username, displayName: displayName, avatarUrl: me.user.avatarUrl),
       bio: bio,
+      followers: me.followers,
+      following: me.following,
+    );
+    notifyListeners();
+  }
+
+  /// Demo: the picked photo is shown from this device and kept for the session.
+  @override
+  Future<void> setAvatar(XFile? photo) async {
+    await MockNetwork.request();
+    final me = await currentProfile();
+    final u = me.user;
+    _me = UserProfile(
+      user: FeedAuthor(id: u.id, username: u.username, displayName: u.displayName, avatarUrl: photo?.path),
+      bio: me.bio,
       followers: me.followers,
       following: me.following,
     );

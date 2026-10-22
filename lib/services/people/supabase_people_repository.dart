@@ -1,4 +1,6 @@
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 import '../../config/supabase_config.dart';
 import '../../models/feed/feed_author.dart';
 import '../../repositories/profile_repository.dart';
@@ -94,6 +96,31 @@ class SupabasePeopleRepository extends PeopleRepository {
       language: current?.preferredLanguage ?? 'en',
       timezone: current?.preferredTimezone ?? 'UTC',
     );
+    notifyListeners();
+  }
+
+  /// Uploads to the public `profile-media` bucket under the user's folder,
+  /// saves its URL, then removes the previous photo.
+  @override
+  Future<void> setAvatar(XFile? photo) async {
+    final bucket = _client.storage.from('profile-media');
+    final old = (await ProfileRepository().current())?.avatarUrl;
+    String? url;
+    if (photo != null) {
+      // A new name each time, so browsers never show a cached old photo.
+      final path = '$currentUserId/avatar-${const Uuid().v4()}';
+      await bucket.uploadBinary(path, await photo.readAsBytes(), fileOptions: FileOptions(contentType: photo.mimeType ?? 'image/jpeg'));
+      url = bucket.getPublicUrl(path);
+    }
+    await _client.rpc('set_my_avatar', params: {'p_url': url});
+    const marker = '/profile-media/';
+    if (old != null && old.contains(marker)) {
+      try {
+        await bucket.remove([old.substring(old.indexOf(marker) + marker.length)]);
+      } catch (_) {
+        // A leftover file does no harm.
+      }
+    }
     notifyListeners();
   }
 
