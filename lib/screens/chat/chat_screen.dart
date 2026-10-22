@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/inbox/inbox_models.dart';
 import '../../services/inbox/inbox_repository.dart';
 import '../../services/mock/mock_people.dart';
-import '../../services/mock_feed_repository.dart';
+import '../../services/feed/feed_repository.dart';
 import '../../services/people/people_repository.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/common/state_views.dart';
@@ -76,7 +76,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final scheme = theme.colorScheme;
     final convo = _repo.conversation(widget.conversationId);
     final other = convo?.other;
-    final party = convo?.partyId == null ? null : MockFeedRepository.instance.party(convo!.partyId!);
+    final party = convo?.partyId == null ? null : FeedRepository.instance.party(convo!.partyId!);
     final messages = _messages;
 
     return Scaffold(

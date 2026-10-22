@@ -4,7 +4,7 @@ import '../../config/feed_config.dart';
 import '../../models/countdown.dart';
 import '../../models/feed/feed_party.dart';
 import '../../models/feed/party_options.dart';
-import '../../services/mock_feed_repository.dart';
+import '../../services/feed/feed_repository.dart';
 import '../../widgets/countdown/countdown_style.dart';
 import '../../widgets/countdown/phase_builder.dart';
 import '../../widgets/countdown/photo_countdown_overlay.dart';
@@ -28,12 +28,14 @@ class FeedPartyScreen extends StatefulWidget {
 }
 
 class _FeedPartyScreenState extends State<FeedPartyScreen> {
-  final _repo = MockFeedRepository.instance;
+  final _repo = FeedRepository.instance;
+  bool _loading = true, _failed = false, _uploading = false;
 
   @override
   void initState() {
     super.initState();
     _repo.addListener(_changed);
+    _load();
   }
 
   @override
@@ -46,8 +48,27 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
     if (mounted) setState(() {});
   }
 
+  /// Fetches the latest posts. A Party already shown in a list appears right
+  /// away and updates when this finishes.
+  Future<void> _load() async {
+    if (_failed || !_loading) {
+      setState(() {
+        _loading = true;
+        _failed = false;
+      });
+    }
+    try {
+      await _repo.loadParty(widget.partyId);
+    } catch (_) {
+      if (mounted) setState(() => _failed = true);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   Future<void> _upload(FeedParty party) async {
-    final x = await ImagePicker().pickMedia();
+    // Photos only, made smaller before uploading so posting stays quick.
+    final x = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 2048, maxHeight: 2048, imageQuality: 85);
     if (x == null || !mounted) return;
     // Re-check: the deadline may have passed while the picker was open.
     final now = DateTime.now();
@@ -55,13 +76,25 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.uploadsClosedForParty)));
       return;
     }
-    final video = (x.mimeType ?? '').startsWith('video/') || RegExp(r'\.(mp4|mov|m4v|webm)$', caseSensitive: false).hasMatch(x.name);
-    _repo.addLocalPost(party, path: x.path, video: video);
+    setState(() => _uploading = true);
+    try {
+      await _repo.addPhoto(party, x);
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.photoPostFailed)));
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final party = _repo.party(widget.partyId);
+    if (party == null && (_loading || _failed)) {
+      return Scaffold(
+        appBar: AppBar(leading: const AppBackButton()),
+        body: _failed ? Center(child: ErrorState(onRetry: _load)) : const LoadingState(),
+      );
+    }
     if (party == null) {
       return Scaffold(
         appBar: AppBar(leading: const AppBackButton()),
@@ -80,86 +113,91 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
         title: Text(party.title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
         actions: [IconButton(onPressed: () => copyPartyLink(context, party), icon: const Icon(Icons.ios_share), tooltip: context.l10n.copyLink)],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: AspectRatio(
-              aspectRatio: FeedConfig.mediaAspectRatio,
-              child: Stack(fit: StackFit.expand, children: [
-                party.posts.isNotEmpty ? FeedMediaView(post: party.posts.first) : PartyImage(party: party, coverOnly: true),
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.topCenter, end: Alignment.bottomCenter, stops: [0.45, 1], colors: [Color(0x00000000), Color(0x8C000000)]),
-                  ),
-                ),
-                PhotoCountdownOverlay(startAt: party.startAt, endAt: party.endAt, style: CountdownStyle.compact, timerStyle: party.timerStyle),
-              ]),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  PhaseBuilder(
-                    startAt: party.startAt,
-                    endAt: party.endAt,
-                    builder: (context, phase) => Text(
-                      [
-                        PartyAudienceText.label(party, phase),
-                        context.l10n.postCount(party.posts.length),
-                        if (party.privacy != PartyPrivacy.public) party.privacy.label,
-                      ].join(' · '),
-                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+      body: RefreshIndicator(
+        onRefresh: _load,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: AspectRatio(
+                aspectRatio: FeedConfig.mediaAspectRatio,
+                child: Stack(fit: StackFit.expand, children: [
+                  party.posts.isNotEmpty ? FeedMediaView(post: party.posts.first) : PartyImage(party: party, coverOnly: true),
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.topCenter, end: Alignment.bottomCenter, stops: [0.45, 1], colors: [Color(0x00000000), Color(0x8C000000)]),
                     ),
                   ),
-                  if (party.description?.isNotEmpty == true) ...[
-                    const SizedBox(height: 8),
-                    Text(party.description!, style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15)),
-                  ],
-                  const SizedBox(height: 12),
-                  PhaseBuilder(
-                    startAt: party.startAt,
-                    endAt: party.endAt,
-                    builder: (context, phase) => _UploadButton(
-                      phase: phase,
-                      opensAt: CountdownSnapshot.formatMoment(party.startAt, DateTime.now()),
-                      onPressed: () => _upload(party),
-                    ),
-                  ),
-                ],
+                  PhotoCountdownOverlay(startAt: party.startAt, endAt: party.endAt, style: CountdownStyle.compact, timerStyle: party.timerStyle),
+                ]),
               ),
             ),
-          ),
-          if (party.posts.isEmpty)
             SliverToBoxAdapter(
-              child: EmptyState(icon: Icons.photo_library_outlined, title: context.l10n.noPostsYet, message: context.l10n.coverShownUntilFirst),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    PhaseBuilder(
+                      startAt: party.startAt,
+                      endAt: party.endAt,
+                      builder: (context, phase) => Text(
+                        [
+                          PartyAudienceText.label(party, phase),
+                          context.l10n.postCount(party.posts.length),
+                          if (party.privacy != PartyPrivacy.public) party.privacy.label,
+                        ].join(' · '),
+                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ),
+                    if (party.description?.isNotEmpty == true) ...[
+                      const SizedBox(height: 8),
+                      Text(party.description!, style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15)),
+                    ],
+                    const SizedBox(height: 12),
+                    PhaseBuilder(
+                      startAt: party.startAt,
+                      endAt: party.endAt,
+                      builder: (context, phase) => _UploadButton(
+                        phase: phase,
+                        uploading: _uploading,
+                        opensAt: CountdownSnapshot.formatMoment(party.startAt, DateTime.now()),
+                        onPressed: () => _upload(party),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          SliverGrid.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 2, crossAxisSpacing: 2),
-            itemCount: party.posts.length,
-            itemBuilder: (context, i) {
-              final post = party.posts[i];
-              final url = post.imageUrl?.call(thumbPx.width.toInt(), thumbPx.height.toInt());
-              return GestureDetector(
-                onTap: () => Navigator.of(context).push(PostViewerScreen.route(party: party, initialIndex: i)),
-                child: Stack(fit: StackFit.expand, children: [
-                  url != null
-                      ? Image.network(url,
-                          fit: BoxFit.cover,
-                          cacheWidth: thumbPx.width.toInt(),
-                          frameBuilder: (context, child, frame, wasSync) => wasSync || frame != null ? child : const MediaPlaceholder(),
-                          errorBuilder: (context, error, stack) => const MediaPlaceholder(error: true))
-                      : FeedMediaView(post: post),
-                  if (post.isVideo) const Positioned(top: 6, right: 6, child: Icon(Icons.videocam_outlined, color: Colors.white, size: 18)),
-                ]),
-              );
-            },
-          ),
-          SliverToBoxAdapter(child: SizedBox(height: 24 + MediaQuery.paddingOf(context).bottom)),
-        ],
+            if (party.posts.isEmpty)
+              SliverToBoxAdapter(
+                child: EmptyState(icon: Icons.photo_library_outlined, title: context.l10n.noPostsYet, message: context.l10n.coverShownUntilFirst),
+              ),
+            SliverGrid.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 2, crossAxisSpacing: 2),
+              itemCount: party.posts.length,
+              itemBuilder: (context, i) {
+                final post = party.posts[i];
+                final url = post.imageUrl?.call(thumbPx.width.toInt(), thumbPx.height.toInt());
+                return GestureDetector(
+                  onTap: () => Navigator.of(context).push(PostViewerScreen.route(party: party, initialIndex: i)),
+                  child: Stack(fit: StackFit.expand, children: [
+                    url != null
+                        ? Image.network(url,
+                            fit: BoxFit.cover,
+                            cacheWidth: thumbPx.width.toInt(),
+                            frameBuilder: (context, child, frame, wasSync) => wasSync || frame != null ? child : const MediaPlaceholder(),
+                            errorBuilder: (context, error, stack) => const MediaPlaceholder(error: true))
+                        : FeedMediaView(post: post),
+                    if (post.isVideo) const Positioned(top: 6, right: 6, child: Icon(Icons.videocam_outlined, color: Colors.white, size: 18)),
+                  ]),
+                );
+              },
+            ),
+            SliverToBoxAdapter(child: SizedBox(height: 24 + MediaQuery.paddingOf(context).bottom)),
+          ],
+        ),
       ),
     );
   }
@@ -167,16 +205,22 @@ class _FeedPartyScreenState extends State<FeedPartyScreen> {
 
 class _UploadButton extends StatelessWidget {
   final CountdownPhase phase;
+  final bool uploading;
   final String opensAt;
   final VoidCallback onPressed;
-  const _UploadButton({required this.phase, required this.opensAt, required this.onPressed});
+  const _UploadButton({required this.phase, required this.uploading, required this.opensAt, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     final style = FilledButton.styleFrom(minimumSize: const Size.fromHeight(48));
     return switch (phase) {
+      CountdownPhase.live when uploading => FilledButton.icon(
+          style: style,
+          onPressed: null,
+          icon: const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+          label: Text(context.l10n.postingPhoto)),
       CountdownPhase.live => FilledButton.icon(
-          style: style, onPressed: onPressed, icon: const Icon(Icons.add_photo_alternate_outlined), label: Text(context.l10n.addPhotoVideo)),
+          style: style, onPressed: onPressed, icon: const Icon(Icons.add_photo_alternate_outlined), label: Text(context.l10n.addPhoto)),
       CountdownPhase.upcoming =>
         FilledButton.icon(style: style, onPressed: null, icon: const Icon(Icons.schedule), label: Text(context.l10n.uploadsOpenAt(opensAt))),
       CountdownPhase.closed =>

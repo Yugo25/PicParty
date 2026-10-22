@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../config/app_config.dart';
 import '../../models/feed/feed_author.dart';
 import 'mock_people_repository.dart';
+import 'supabase_people_repository.dart';
 
 /// A profile page's header data.
 @immutable
@@ -15,8 +18,8 @@ class UserProfile {
 /// People, profiles and follows. Notifies when follows or the current
 /// profile change.
 abstract class PeopleRepository extends ChangeNotifier {
-  /// The repository the app uses. Swap for an API-backed one later.
-  static PeopleRepository instance = MockPeopleRepository();
+  /// Demo people without a backend; Supabase otherwise.
+  static PeopleRepository instance = AppConfig.demoMode ? MockPeopleRepository() : SupabasePeopleRepository();
 
   String get currentUserId;
 
@@ -33,6 +36,9 @@ abstract class PeopleRepository extends ChangeNotifier {
   Future<void> setFollowing(String userId, bool follow);
 
   Future<void> updateProfile({required String displayName, required String username, required String bio});
+
+  /// Sets the signed-in person's photo, or removes it when [photo] is null.
+  Future<void> setAvatar(XFile? photo);
 
   /// Forgets the signed-in profile after signing out or switching accounts.
   void resetCurrentUser();

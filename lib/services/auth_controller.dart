@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/app_config.dart';
 import '../config/supabase_config.dart';
+import 'feed/feed_repository.dart';
 import 'people/people_repository.dart';
 
 /// Whether someone is signed in. The router listens to it to show the
@@ -25,8 +26,9 @@ class AuthController extends ChangeNotifier {
       final id = state.session?.user.id;
       if (id == _userId) return;
       _userId = id;
-      // Drop the previous person's cached profile.
+      // Drop the previous person's cached profile and Parties.
       PeopleRepository.instance.resetCurrentUser();
+      FeedRepository.instance.clearCache();
       notifyListeners();
     });
   }

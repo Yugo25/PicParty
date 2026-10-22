@@ -310,5 +310,14 @@
   "authOffline": "无法连接。请检查网络后重试。",
   "authFailed": "出了点问题，请重试。",
   "signingIn": "正在登录…",
-  "creatingAccount": "正在创建账号…"
+  "creatingAccount": "正在创建账号…",
+  "feedEmpty": "还没有派对。点 + 创建一个，或在探索里找找看。",
+  "addPhoto": "添加照片",
+  "postingPhoto": "正在发布…",
+  "photoPostFailed": "照片发布失败。请检查网络后重试。",
+  "commentFailed": "评论发布失败，请重试。",
+  "messagesNotConnected": "私信功能暂未开放。",
+  "changePhoto": "更换头像",
+  "removePhoto": "移除头像",
+  "profilePhotoFailed": "头像更新失败，请重试。"
 }

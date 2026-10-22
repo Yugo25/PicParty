@@ -3,15 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import '../../config/app_config.dart';
 import '../../core/time_format.dart';
 import '../../models/countdown.dart';
-import '../../models/feed/feed_party.dart';
 import '../../models/feed/party_options.dart';
-import '../../repositories/party_repository.dart';
-import '../../services/mock/mock_network.dart';
-import '../../services/mock_feed_repository.dart';
-import '../../services/people/people_repository.dart';
+import '../../services/feed/feed_repository.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/common/filters.dart';
 import '../../widgets/common/form_parts.dart';
@@ -58,6 +53,7 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
   final _titleFocus = FocusNode();
   String _category = 'photography';
   PartyPrivacy _privacy = PartyPrivacy.public;
+  XFile? _cover;
   String? _coverPath;
 
   // Step 2 — time & style.
@@ -147,7 +143,12 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
   Future<void> _pickCover() async {
     try {
       final x = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 2400, imageQuality: 90);
-      if (x != null && mounted) setState(() => _coverPath = x.path);
+      if (x != null && mounted) {
+        setState(() {
+          _cover = x;
+          _coverPath = x.path;
+        });
+      }
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.photosOpenFailed)));
     }
@@ -220,36 +221,16 @@ class _CreatePartyScreenState extends State<CreatePartyScreen> {
 
     setState(() => _submitting = true);
     try {
-      if (AppConfig.demoMode) await MockNetwork.request(const Duration(milliseconds: 600));
-      final start = _startFor(DateTime.now());
-      final created = await PartyRepository().create(
+      final created = await FeedRepository.instance.createParty(
         title: _title.text.trim(),
         description: _description.text.trim().isEmpty ? null : _description.text.trim(),
         category: _category,
-        language: 'en',
-        style: _timerStyle.name,
-        privacy: _privacy.name,
-        startAt: start,
-        durationMinutes: _duration!.inMinutes,
-      );
-      final me = PeopleRepository.instance.currentUserId;
-      MockFeedRepository.instance.addParty(FeedParty(
-        id: created.id,
-        title: created.title,
-        description: created.description,
-        category: created.category,
-        coverLocalPath: _coverPath,
-        contributorCount: 0,
-        memberCount: 1,
-        startAt: created.startAt,
-        endAt: created.endAt,
-        createdAt: created.createdAt,
-        posts: [],
         privacy: _privacy,
         timerStyle: _timerStyle,
-        hostId: me,
-        memberIds: {me},
-      ));
+        startAt: _startFor(DateTime.now()),
+        duration: _duration!,
+        cover: _cover,
+      );
       if (!mounted) return;
       context.pushReplacement('/p/${created.id}');
     } catch (_) {

@@ -6,7 +6,7 @@ import '../../models/feed/feed_party.dart';
 import '../../models/feed/feed_post.dart';
 import '../../models/inbox/inbox_models.dart';
 import '../../services/inbox/inbox_repository.dart';
-import '../../services/mock_feed_repository.dart';
+import '../../services/feed/feed_repository.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/common/filters.dart';
 import '../../widgets/common/state_views.dart';
@@ -127,7 +127,7 @@ class _ActivityRow extends StatelessWidget {
   final ActivityItem item;
   const _ActivityRow({required this.item});
 
-  FeedParty? get _party => item.partyId == null ? null : MockFeedRepository.instance.party(item.partyId!);
+  FeedParty? get _party => item.partyId == null ? null : FeedRepository.instance.party(item.partyId!);
 
   FeedPost? _post(FeedParty? party) {
     if (party == null || item.postId == null) return null;

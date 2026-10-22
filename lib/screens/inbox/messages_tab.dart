@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/time_format.dart';
 import '../../models/inbox/inbox_models.dart';
 import '../../services/inbox/inbox_repository.dart';
-import '../../services/mock_feed_repository.dart';
+import '../../services/feed/feed_repository.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/common/form_parts.dart';
 import '../../widgets/common/state_views.dart';
@@ -118,7 +118,7 @@ class _ConversationRow extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final unread = c.unread > 0;
-    final party = c.partyId == null ? null : MockFeedRepository.instance.party(c.partyId!);
+    final party = c.partyId == null ? null : FeedRepository.instance.party(c.partyId!);
     final previewStyle = TextStyle(
       fontSize: 15,
       color: unread ? scheme.onSurface : scheme.onSurfaceVariant,

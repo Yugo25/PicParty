@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/mock_feed_repository.dart';
+import '../../services/feed/feed_repository.dart';
 import '../common/underline_tabs.dart';
 import '../../l10n/l10n.dart';
 

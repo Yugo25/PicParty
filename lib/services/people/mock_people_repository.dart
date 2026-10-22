@@ -1,3 +1,4 @@
+import 'package:image_picker/image_picker.dart';
 import '../../config/app_config.dart';
 import '../../models/feed/feed_author.dart';
 import '../../repositories/profile_repository.dart';
@@ -5,11 +6,10 @@ import '../mock/mock_network.dart';
 import '../mock/mock_people.dart';
 import 'people_repository.dart';
 
-/// Demo people and follows, kept in memory for this session.
+/// Demo people and follows, kept in memory for this session (demo mode).
 ///
-/// The signed-in profile still comes from [ProfileRepository] (its demo
-/// profile in demo mode, the real one otherwise); only follows and other
-/// people are mocked.
+/// The signed-in profile comes from [ProfileRepository]'s demo profile; follows
+/// and other people are mocked.
 class MockPeopleRepository extends PeopleRepository {
   final _following = <String>{'u1', 'u2'};
   static const _followersOfMe = {'u4', 'u6', 'u8'};
@@ -93,6 +93,21 @@ class MockPeopleRepository extends PeopleRepository {
     _me = UserProfile(
       user: FeedAuthor(id: me.user.id, username: username, displayName: displayName, avatarUrl: me.user.avatarUrl),
       bio: bio,
+      followers: me.followers,
+      following: me.following,
+    );
+    notifyListeners();
+  }
+
+  /// Demo: the picked photo is shown from this device and kept for the session.
+  @override
+  Future<void> setAvatar(XFile? photo) async {
+    await MockNetwork.request();
+    final me = await currentProfile();
+    final u = me.user;
+    _me = UserProfile(
+      user: FeedAuthor(id: u.id, username: u.username, displayName: u.displayName, avatarUrl: photo?.path),
+      bio: me.bio,
       followers: me.followers,
       following: me.following,
     );

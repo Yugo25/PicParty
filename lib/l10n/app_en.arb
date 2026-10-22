@@ -561,5 +561,14 @@
   "authOffline": "Couldn't connect. Check your connection and try again.",
   "authFailed": "Something went wrong. Please try again.",
   "signingIn": "Signing in…",
-  "creatingAccount": "Creating account…"
+  "creatingAccount": "Creating account…",
+  "feedEmpty": "No Parties yet. Start one with + or find one in Explore.",
+  "addPhoto": "Add photo",
+  "postingPhoto": "Posting…",
+  "photoPostFailed": "Couldn't post your photo. Check your connection and try again.",
+  "commentFailed": "Couldn't post your comment. Try again.",
+  "messagesNotConnected": "Messages aren't available yet.",
+  "changePhoto": "Change photo",
+  "removePhoto": "Remove photo",
+  "profilePhotoFailed": "Couldn't update your photo. Try again."
 }
