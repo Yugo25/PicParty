@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/feed_config.dart';
 import '../../models/feed/feed_party.dart';
 import '../../screens/media_detail/post_viewer_screen.dart';
 import '../../services/feed/active_party_controller.dart';
 import '../../services/mock_feed_repository.dart';
+import '../countdown/photo_countdown_overlay.dart';
+import '../party/party_image.dart';
 import 'comments_sheet.dart';
 import 'party_header_row.dart';
 import 'party_media_carousel.dart';
 import 'party_menu_sheet.dart';
 import 'post_action_bar.dart';
 import 'post_caption.dart';
+import '../../l10n/l10n.dart';
 
 /// One Party in the home feed:
 /// header → photo-backed countdown → post actions → caption → divider.
@@ -46,7 +50,7 @@ class _PartyFeedItemState extends State<PartyFeedItem> {
 
   @override
   Widget build(BuildContext context) {
-    if (_party.posts.isEmpty) return const SizedBox.shrink();
+    if (_party.posts.isEmpty) return _coverOnly(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -84,6 +88,51 @@ class _PartyFeedItemState extends State<PartyFeedItem> {
               ],
             );
           },
+        ),
+        const Padding(padding: EdgeInsets.fromLTRB(16, 4, 16, 0), child: Divider()),
+      ],
+    );
+  }
+
+  /// Before anyone has posted, the cover stands in as the timer's background.
+  Widget _coverOnly(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        PartyHeaderRow(
+          party: _party,
+          onOpenParty: _openParty,
+          onMenu: () => widget.feed.suspendWhile(showPartyMenu(context, party: _party, onViewParty: _openParty)),
+        ),
+        GestureDetector(
+          onTap: _openParty,
+          child: AspectRatio(
+            aspectRatio: FeedConfig.mediaAspectRatio,
+            child: ClipRect(
+              child: Stack(fit: StackFit.expand, children: [
+                PartyImage(party: _party, coverOnly: true),
+                const IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.topCenter, end: Alignment.bottomCenter, stops: [0.45, 1], colors: [Color(0x00000000), Color(0x8C000000)]),
+                    ),
+                  ),
+                ),
+                PhotoCountdownOverlay(startAt: _party.startAt, endAt: _party.endAt, timerStyle: _party.timerStyle),
+              ]),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Text(context.l10n.feedNoPosts,
+              style: theme.textTheme.bodyMedium?.copyWith(fontSize: 15, color: theme.colorScheme.onSurfaceVariant)),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+          child: Align(alignment: Alignment.centerLeft, child: ViewPartyLink(onTap: _openParty)),
         ),
         const Padding(padding: EdgeInsets.fromLTRB(16, 4, 16, 0), child: Divider()),
       ],

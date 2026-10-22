@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../core/app_clock.dart';
 import '../../models/countdown.dart';
+import '../../models/feed/party_options.dart';
+import 'clock_builder.dart';
 import 'countdown_style.dart';
+import 'timer_face.dart';
 
 /// The Party timer drawn on top of a post's photo.
 ///
@@ -11,8 +13,15 @@ import 'countdown_style.dart';
 class PhotoCountdownOverlay extends StatelessWidget {
   final DateTime startAt, endAt;
   final CountdownStyle style;
+  final TimerStyle timerStyle;
 
-  const PhotoCountdownOverlay({super.key, required this.startAt, required this.endAt, this.style = CountdownStyle.overlay});
+  const PhotoCountdownOverlay({
+    super.key,
+    required this.startAt,
+    required this.endAt,
+    this.style = CountdownStyle.overlay,
+    this.timerStyle = TimerStyle.digital,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,26 +29,15 @@ class PhotoCountdownOverlay extends StatelessWidget {
       child: Align(
         alignment: style.alignment,
         child: RepaintBoundary(
-          child: ValueListenableBuilder<DateTime>(
-            valueListenable: AppClock.instance,
-            builder: (context, now, _) {
+          child: ClockBuilder(
+            builder: (context, now) {
               final snap = CountdownSnapshot.at(start: startAt, end: endAt, now: now);
-              final closed = snap.phase == CountdownPhase.closed;
-              return Semantics(
-                liveRegion: false,
-                label: '${snap.label} ${snap.display}, ${snap.targetLabel(now)}',
-                child: ExcludeSemantics(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(snap.label, style: style.labelStyle),
-                      SizedBox(height: style.labelGap),
-                      Text(snap.display, style: closed ? style.closedStyle : style.digitsStyle, maxLines: 1),
-                      SizedBox(height: style.targetGap),
-                      Text(snap.targetLabel(now), style: style.targetStyle),
-                    ],
-                  ),
-                ),
+              return TimerFace(
+                snapshot: snap,
+                timerStyle: timerStyle,
+                style: style,
+                fractionLeft: CountdownSnapshot.fractionLeft(start: startAt, end: endAt, now: now),
+                caption: snap.targetLabel(now),
               );
             },
           ),

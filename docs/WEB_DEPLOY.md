@@ -11,10 +11,12 @@ Web 版をインターネット上に置けば、iPhone の Safari で URL を�
 
 ## 0. まず知っておくこと（今の段階の注意点）
 
-- 今のアプリは **Demo Mode**（デモモード）で動いています。
+- Supabase のキー（`.env`）を使わずにビルドすると、アプリは **Demo Mode**（デモモード）で動きます。
   - データ（作ったパーティ・追加した写真・いいね）は **その端末のブラウザの中だけ** にあります。
   - **ページを再読み込みしたり、アプリを閉じたりすると消えます。**
-  - 友達が同じ URL を開いても、**お互いの写真は見えません**（共有機能は、今後 Supabase というサーバーを繋ぐと動くようになります）。
+  - 友達が同じ URL を開いても、**お互いの写真は見えません**。
+- `.env` を使ってビルドすると（1. を参照）、最初に **ログイン画面** が出て、自分のアカウントを作れます。
+  Supabase の準備は `docs/SUPABASE_SETUP.md` を見てください。
 - 公開した URL を知っている人は **誰でも開けます**。今はデモデータだけなので問題ありませんが、覚えておいてください。
 - プッシュ通知は Web 版では動きません。
 
@@ -27,8 +29,10 @@ Mac の「ターミナル」で、次のコマンドを順番に実行します�
 ```bash
 cd ~/PicParty
 flutter pub get
-flutter build web --release
+flutter build web --release --dart-define-from-file=.env
 ```
+
+> `--dart-define-from-file=.env` は「Supabase につなぐ」という意味です。`.env` をまだ作っていない場合は、この部分を消して実行するとデモモードになります。
 
 最後に `✓ Built build/web` と表示されれば成功です。
 `PicParty/build/web` というフォルダの中に、公開用のファイル一式ができています。
@@ -113,7 +117,7 @@ URL を LINE などで送るだけです。相手も同じ手順で「ホーム�
 1. ターミナルで：
    ```bash
    cd ~/PicParty
-   flutter build web --release
+   flutter build web --release --dart-define-from-file=.env
    ```
 2. Netlify で公開中のプロジェクトを開き、上部メニューの「**Deploys**」を開きます。
 3. ページ下の「Need to update your project? Drag and drop your project folder here」の枠に、
@@ -129,7 +133,8 @@ URL を LINE などで送るだけです。相手も同じ手順で「ホーム�
 | 症状 | 対処 |
 |---|---|
 | iPhone で真っ白なまま | 10 秒ほど待つ。だめなら Safari で再読み込み。電波の良い場所で試す |
-| 写真を追加しても、再読み込みすると消える | 今はデモモードなので仕様です（0. を参照） |
+| 写真を追加しても、再読み込みすると消える | 今はデモモード、または写真がまだ見本データの段階なので仕様です（0. を参照） |
+| ログイン画面が出ない | ビルドのときに `--dart-define-from-file=.env` を付けたか確認してください |
 | 「写真を追加」でカメラが起動しない | iPhone の「設定」→「Safari」→「カメラ」が「確認」または「許可」になっているか確認 |
 | Netlify のサイトが消えた | ログインせずにアップロードした可能性があります。ログインしてから 4. をやり直してください |
 | `flutter: command not found` と出る | Flutter がインストールされているか確認（`which flutter`） |

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'tokens.dart';
 
 /// Monochrome theme: white / near-black surfaces, neutral greys, and no accent
 /// colour so the posted photos carry the colour.
@@ -53,6 +54,7 @@ class AppTheme {
       outline: secondary,
       outlineVariant: divider,
     );
+    final inputBorder = brightness == Brightness.light ? const Color(0xFFCFCFCF) : const Color(0xFF3A3A3A);
     final base = ThemeData(useMaterial3: true, colorScheme: scheme, brightness: brightness);
     return base.copyWith(
       scaffoldBackgroundColor: background,
@@ -82,11 +84,39 @@ class AppTheme {
       iconTheme: IconThemeData(color: foreground),
       textTheme: base.textTheme.apply(bodyColor: foreground, displayColor: foreground),
       filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.radius)),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
       ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: foreground,
+          side: BorderSide(color: brightness == Brightness.light ? const Color(0xFFCFCFCF) : const Color(0xFF3A3A3A)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.radius)),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: foreground)),
+      inputDecorationTheme: InputDecorationTheme(
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        hintStyle: TextStyle(color: secondary),
+        counterStyle: TextStyle(color: secondary, fontSize: 13),
+        border: _inputBorder(inputBorder),
+        enabledBorder: _inputBorder(inputBorder),
+        focusedBorder: _inputBorder(foreground, width: 1.5),
+        errorBorder: _inputBorder(const Color(0xFFD93025)),
+        focusedErrorBorder: _inputBorder(const Color(0xFFD93025), width: 1.5),
+      ),
+      textSelectionTheme: TextSelectionThemeData(cursorColor: foreground, selectionHandleColor: foreground),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: foreground),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: SegmentedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
       ),
     );
   }
+
+  static OutlineInputBorder _inputBorder(Color color, {double width = 1}) =>
+      OutlineInputBorder(borderRadius: BorderRadius.circular(Tokens.radius), borderSide: BorderSide(color: color, width: width));
 }

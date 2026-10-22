@@ -43,8 +43,8 @@ class _HomeScreenState extends State<HomeScreen> {
           FeedHeader(
             tab: _tab,
             onTab: _selectTab,
-            onSearch: () => _feed.suspendWhile(context.push('/search')),
-            onNotifications: () => _feed.suspendWhile(context.push('/notifications')),
+            onSearch: () => context.go('/discover?focus=search'),
+            onNotifications: () => context.go('/activity?tab=activity'),
           ),
           Expanded(child: PartyFeedList(key: ValueKey(_tab), tab: _tab, feed: _feed)),
         ],

@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 import '../../models/feed/feed_post.dart';
 import '../../services/feed/video_playback_coordinator.dart';
 import '../media/local_media_image.dart';
+import '../../l10n/l10n.dart';
 
 /// Pixel size to request for an image shown at [logical] size, rounded up to a
 /// step so nearby sizes share one cached download.
@@ -86,7 +87,7 @@ class MediaPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) => ColoredBox(
         color: const Color(0xFF2A2A2A),
         child: error
-            ? const Center(child: Icon(Icons.broken_image_outlined, color: Colors.white54, size: 32, semanticLabel: 'Media unavailable'))
+            ? Center(child: Icon(Icons.broken_image_outlined, color: Colors.white54, size: 32, semanticLabel: context.l10n.mediaUnavailable))
             : const SizedBox.expand(),
       );
 }
@@ -94,11 +95,11 @@ class MediaPlaceholder extends StatelessWidget {
 class _VideoBadge extends StatelessWidget {
   const _VideoBadge();
   @override
-  Widget build(BuildContext context) => const DecoratedBox(
-        decoration: BoxDecoration(color: Color(0x66000000), borderRadius: BorderRadius.all(Radius.circular(10))),
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: const BoxDecoration(color: Color(0x66000000), borderRadius: BorderRadius.all(Radius.circular(10))),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          child: Icon(Icons.videocam_outlined, size: 16, color: Colors.white, semanticLabel: 'Video'),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          child: Icon(Icons.videocam_outlined, size: 16, color: Colors.white, semanticLabel: context.l10n.video),
         ),
       );
 }

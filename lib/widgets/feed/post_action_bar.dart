@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/feed/feed_post.dart';
 import 'author_avatar.dart';
+import '../../l10n/l10n.dart';
 
 /// Author of the post being shown, plus like / comment / share for that post.
 class PostActionBar extends StatelessWidget {
@@ -33,14 +34,14 @@ class PostActionBar extends StatelessWidget {
                   icon: r.liked ? Icons.favorite : Icons.favorite_border,
                   color: r.liked ? const Color(0xFFE5484D) : null,
                   count: r.likeCount,
-                  label: r.liked ? 'Unlike' : 'Like',
+                  label: r.liked ? context.l10n.unlike : context.l10n.like,
                   onTap: onLike,
                 ),
-                _CountButton(icon: Icons.chat_bubble_outline, count: r.commentCount, label: 'Comments', onTap: onComments),
+                _CountButton(icon: Icons.chat_bubble_outline, count: r.commentCount, label: context.l10n.comments, onTap: onComments),
               ],
             ),
           ),
-          IconButton(onPressed: onShare, icon: const Icon(Icons.ios_share), tooltip: 'Share', iconSize: 22),
+          IconButton(onPressed: onShare, icon: const Icon(Icons.ios_share), tooltip: context.l10n.share, iconSize: 22),
         ],
       ),
     );

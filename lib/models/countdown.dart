@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import '../l10n/l10n.dart';
 
 /// Where a Party is in its life cycle, relative to "now".
 enum CountdownPhase { upcoming, live, closed }
@@ -29,27 +30,55 @@ class CountdownSnapshot {
   bool get acceptsUploads => phase == CountdownPhase.live;
 
   String get label => switch (phase) {
-        CountdownPhase.upcoming => 'STARTS IN',
-        CountdownPhase.live => 'UPLOADS CLOSE IN',
-        CountdownPhase.closed => 'PARTY ENDED',
+        CountdownPhase.upcoming => L10n.current.countdownStartsIn,
+        CountdownPhase.live => L10n.current.countdownUploadsCloseIn,
+        CountdownPhase.closed => L10n.current.countdownPartyEnded,
       };
 
   /// The big number, e.g. `06:24:18`, or `2d 06:24` when a day or more is left.
   /// Closed Parties show `Uploads closed` instead of a time.
-  String get display => phase == CountdownPhase.closed ? 'Uploads closed' : formatRemaining(remaining);
+  String get display => phase == CountdownPhase.closed ? L10n.current.uploadsClosed : formatRemaining(remaining);
 
   static String formatRemaining(Duration d) {
     final s = d.isNegative ? 0 : d.inSeconds;
     final days = s ~/ 86400, h = (s % 86400) ~/ 3600, m = (s % 3600) ~/ 60, sec = s % 60;
     String two(int v) => v.toString().padLeft(2, '0');
-    return days > 0 ? '${days}d ${two(h)}:${two(m)}' : '${two(h)}:${two(m)}:${two(sec)}';
+    return days > 0 ? '${L10n.current.unitDays(days)} ${two(h)}:${two(m)}' : '${two(h)}:${two(m)}:${two(sec)}';
   }
 
   /// Small line under the timer, in the viewer's local time:
   /// `Today, 16:05`, `Tomorrow, 09:00`, `Oct 15, 16:05`, or `Ended Oct 12, 20:00`.
   String targetLabel(DateTime now) {
     final when = formatMoment(target, now);
-    return phase == CountdownPhase.closed ? 'Ended $when' : when;
+    return phase == CountdownPhase.closed ? L10n.current.countdownEnded(when) : when;
+  }
+
+  /// Short form for cards: `01:59:34`, or `1d 06h` when a day or more is left.
+  static String formatCompact(Duration d) {
+    final s = d.isNegative ? 0 : d.inSeconds;
+    final days = s ~/ 86400, h = (s % 86400) ~/ 3600, m = (s % 3600) ~/ 60, sec = s % 60;
+    String two(int v) => v.toString().padLeft(2, '0');
+    final l = L10n.current;
+    return days > 0 ? '${l.unitDays(days)} ${l.unitHours(two(h))}' : '${two(h)}:${two(m)}:${two(sec)}';
+  }
+
+  /// Minimal timer style: the two largest units, dropping a zero second unit —
+  /// `2d 6h`, `6h`, `5h 59m`, `42m`, `35s`.
+  static String formatMinimal(Duration d) {
+    final s = d.isNegative ? 0 : d.inSeconds;
+    final days = s ~/ 86400, h = (s % 86400) ~/ 3600, m = (s % 3600) ~/ 60, sec = s % 60;
+    final l = L10n.current;
+    if (days > 0) return h > 0 ? '${l.unitDays(days)} ${l.unitHours(h)}' : l.unitDays(days);
+    if (h > 0) return m > 0 ? '${l.unitHours(h)} ${l.unitMinutes(m)}' : l.unitHours(h);
+    if (m > 0) return l.unitMinutes(m);
+    return l.unitSeconds(sec);
+  }
+
+  /// Share of the Party still to run, 1 → 0. Full before the start, empty once closed.
+  static double fractionLeft({required DateTime start, required DateTime end, required DateTime now}) {
+    final total = end.difference(start).inMilliseconds;
+    if (total <= 0 || !now.isAfter(start)) return now.isBefore(end) ? 1 : 0;
+    return (end.difference(now).inMilliseconds / total).clamp(0.0, 1.0);
   }
 
   static String formatMoment(DateTime moment, DateTime now) {
@@ -57,9 +86,10 @@ class CountdownSnapshot {
     final day = DateTime(t.year, t.month, t.day), today = DateTime(n.year, n.month, n.day);
     final time = DateFormat('HH:mm').format(t);
     final diff = day.difference(today).inDays;
-    if (diff == 0) return 'Today, $time';
-    if (diff == 1) return 'Tomorrow, $time';
-    if (diff == -1) return 'Yesterday, $time';
-    return DateFormat(t.year == n.year ? 'MMM d, HH:mm' : 'MMM d y, HH:mm').format(t);
+    final l = L10n.current;
+    if (diff == 0) return l.momentToday(time);
+    if (diff == 1) return l.momentTomorrow(time);
+    if (diff == -1) return l.momentYesterday(time);
+    return l.momentDate((t.year == n.year ? DateFormat.MMMd(L10n.dateLocale) : DateFormat.yMMMd(L10n.dateLocale)).format(t), time);
   }
 }

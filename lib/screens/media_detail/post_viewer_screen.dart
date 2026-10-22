@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/feed/feed_party.dart';
 import '../../widgets/feed/author_avatar.dart';
 import '../../widgets/feed/feed_media_view.dart';
+import '../../l10n/l10n.dart';
 
 /// Full-screen view of a Party's posts: the whole photo (not cropped), zoomable,
 /// swipeable. Pops with the index it ended on so the feed can follow.
@@ -44,7 +45,7 @@ class _PostViewerScreenState extends State<PostViewerScreen> {
         appBar: AppBar(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
-          leading: IconButton(icon: const Icon(Icons.close), tooltip: 'Close', onPressed: () => Navigator.of(context).pop(_index)),
+          leading: IconButton(icon: const Icon(Icons.close), tooltip: context.l10n.close, onPressed: () => Navigator.of(context).pop(_index)),
           title: Text(widget.party.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           actions: [
             Center(child: Text('${_index + 1} / ${posts.length}', style: const TextStyle(color: Colors.white70))),

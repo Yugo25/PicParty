@@ -1,3 +1,4 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../config/app_config.dart';
 import '../config/supabase_config.dart';
@@ -5,7 +6,7 @@ import '../models/party.dart';
 import '../services/demo_service.dart';
 
 class PartyRepository {
-  final _client = SupabaseConfig.client;
+  SupabaseClient get _client => SupabaseConfig.client;
   Future<List<Party>> live({int limit=20}) async {
     if (AppConfig.demoMode) return DemoService.parties.take(limit).toList();
     final rows = await _client.rpc('get_discover_live', params:{'p_limit':limit,'p_before':null});

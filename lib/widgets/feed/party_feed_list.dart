@@ -4,6 +4,7 @@ import '../../models/feed/feed_party.dart';
 import '../../services/feed/active_party_controller.dart';
 import '../../services/mock_feed_repository.dart';
 import 'party_feed_item.dart';
+import '../../l10n/l10n.dart';
 
 /// Vertically scrolling, lazily built and paged list of Parties.
 class PartyFeedList extends StatefulWidget {
@@ -57,7 +58,7 @@ class _PartyFeedListState extends State<PartyFeedList> {
   Widget build(BuildContext context) {
     if (_parties.isEmpty && _loading) return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     if (_parties.isEmpty && !_hasMore) {
-      return Center(child: Text('Nothing here yet', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)));
+      return Center(child: Text(context.l10n.nothingHereYet, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)));
     }
     return NotificationListener<ScrollNotification>(
       onNotification: (n) {
@@ -95,10 +96,10 @@ class _Footer extends StatelessWidget {
       height: 72,
       child: Center(
         child: failed
-            ? TextButton(onPressed: onRetry, child: const Text('Couldn\'t load more. Retry'))
+            ? TextButton(onPressed: onRetry, child: Text(context.l10n.loadMoreFailed))
             : loading || hasMore
                 ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : Text('You\'re all caught up', style: muted),
+                : Text(context.l10n.allCaughtUp, style: muted),
       ),
     );
   }
