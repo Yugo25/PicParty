@@ -532,5 +532,34 @@
   "noMemories": "No memories yet",
   "noMemoriesMessage": "Ended Parties are kept here with all their posts.",
   "shareProfile": "Share profile",
-  "message": "Message"
+  "message": "Message",
+  "authTagline": "Start a Party and share photos together while the timer runs.",
+  "account": "Account",
+  "signOut": "Sign out",
+  "signedInAs": "Signed in as {email}",
+  "@signedInAs": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "nameRequired": "Enter your name.",
+  "emailInvalid": "Enter a valid email address.",
+  "passwordRule": "Use at least 8 characters.",
+  "usernameTaken": "That username is taken. Try another.",
+  "wrongCredentials": "Email or password is incorrect.",
+  "emailAlreadyRegistered": "There's already an account with this email. Sign in instead.",
+  "weakPassword": "That password is too easy to guess. Try a longer one.",
+  "confirmEmailFirst": "Open the link we emailed you to confirm your account, then sign in.",
+  "checkEmailToConfirm": "We sent a link to {email}. Open it to finish creating your account, then sign in.",
+  "@checkEmailToConfirm": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "authOffline": "Couldn't connect. Check your connection and try again.",
+  "authFailed": "Something went wrong. Please try again.",
+  "signingIn": "Signing in…",
+  "creatingAccount": "Creating account…"
 }

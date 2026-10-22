@@ -33,4 +33,7 @@ abstract class PeopleRepository extends ChangeNotifier {
   Future<void> setFollowing(String userId, bool follow);
 
   Future<void> updateProfile({required String displayName, required String username, required String bio});
+
+  /// Forgets the signed-in profile after signing out or switching accounts.
+  void resetCurrentUser();
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/app_config.dart';
 import '../../l10n/l10n.dart';
+import '../../repositories/auth_repository.dart';
 import '../../services/mock/mock_network.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/appearance_picker.dart';
@@ -25,6 +26,22 @@ class SettingsScreen extends StatelessWidget {
           const Divider(indent: Tokens.gutter, endIndent: Tokens.gutter),
           _Section(l.language),
           const LanguagePicker(),
+          if (!AppConfig.demoMode) ...[
+            const Divider(indent: Tokens.gutter, endIndent: Tokens.gutter),
+            _Section(l.account),
+            if (AuthRepository().email != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(Tokens.gutter, 0, Tokens.gutter, 4),
+                child: Text(l.signedInAs(AuthRepository().email!), style: TextStyle(color: scheme.onSurfaceVariant)),
+              ),
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: Tokens.gutter),
+              leading: Icon(Icons.logout, color: scheme.error),
+              title: Text(l.signOut, style: TextStyle(color: scheme.error, fontWeight: FontWeight.w600)),
+              // The router shows the sign-in screen once the session is gone.
+              onTap: () => AuthRepository().signOut(),
+            ),
+          ],
           if (AppConfig.demoMode) ...[
             const Divider(indent: Tokens.gutter, endIndent: Tokens.gutter),
             _Section(l.demo),

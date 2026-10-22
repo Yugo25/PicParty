@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'config/supabase_config.dart';
 import 'core/app_clock.dart';
 import 'l10n/l10n.dart';
+import 'services/auth_controller.dart';
 import 'services/language_controller.dart';
 import 'services/push_service.dart';
 import 'services/preferences_service.dart';
@@ -14,6 +15,7 @@ import 'widgets/common/mobile_frame.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SupabaseConfig.init();
+  AuthController.instance.start();
   await PreferencesService.instance.init();
   await PushService.instance.init();
   ThemeController.instance.load();

@@ -98,4 +98,10 @@ class MockPeopleRepository extends PeopleRepository {
     );
     notifyListeners();
   }
+
+  @override
+  void resetCurrentUser() {
+    _me = null;
+    notifyListeners();
+  }
 }
