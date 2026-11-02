@@ -23,6 +23,7 @@ class AuthController extends ChangeNotifier {
   void start() {
     if (AppConfig.demoMode || _sub != null) return;
     _userId = SupabaseConfig.client.auth.currentUser?.id;
+    if (_userId != null) InboxRepository.instance.refreshUnread();
     _sub = SupabaseConfig.client.auth.onAuthStateChange.listen((state) {
       final id = state.session?.user.id;
       if (id == _userId) return;
@@ -31,6 +32,7 @@ class AuthController extends ChangeNotifier {
       PeopleRepository.instance.resetCurrentUser();
       FeedRepository.instance.clearCache();
       InboxRepository.instance.clearCache();
+      if (id != null) InboxRepository.instance.refreshUnread();
       notifyListeners();
     });
   }

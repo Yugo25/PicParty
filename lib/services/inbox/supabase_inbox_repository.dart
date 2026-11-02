@@ -3,26 +3,36 @@ import '../../config/supabase_config.dart';
 import '../../models/feed/feed_author.dart';
 import '../../models/inbox/inbox_models.dart';
 import '../../repositories/chat_repository.dart';
+import '../feed/feed_repository.dart';
 import 'inbox_repository.dart';
 
-/// Inbox backed by the Supabase chat API ([ChatRepository] and
-/// `get_conversations` from 118_chat.sql).
+/// Inbox backed by Supabase: messages through [ChatRepository] and
+/// 118_chat.sql, Activity and the unread dot through 119_activity.sql.
 ///
-/// The backend has no activity endpoint yet, so that list is empty here and
-/// the screen shows its empty state.
+/// Invites aren't connected yet (nothing in the app sends them).
 class SupabaseInboxRepository extends InboxRepository {
   SupabaseClient get _client => SupabaseConfig.client;
   final _chat = ChatRepository();
 
   /// Conversations seen in the list or opened from a profile, for [conversation].
   final _known = <String, ConversationSummary>{};
-  bool _hasUnread = false;
+  bool _unreadMessages = false, _unreadActivity = false;
 
   @override
   bool get deliversMessages => true;
 
   @override
-  bool get hasUnread => _hasUnread;
+  bool get hasUnread => _unreadMessages || _unreadActivity;
+
+  @override
+  Future<void> refreshUnread() async {
+    try {
+      final r = Map<String, dynamic>.from(await _client.rpc('get_inbox_unread') as Map);
+      _setUnread(messages: r['messages'] == true, activity: r['activity'] == true);
+    } catch (_) {
+      // The dot just stays as it was.
+    }
+  }
 
   @override
   Future<List<ConversationSummary>> conversations({String query = ''}) async {
@@ -32,7 +42,7 @@ class SupabaseInboxRepository extends InboxRepository {
     for (final c in all) {
       _known[c.id] = c;
     }
-    _setUnread(all.any((c) => c.unread > 0));
+    _setUnread(messages: all.any((c) => c.unread > 0));
     final q = query.trim().toLowerCase();
     if (q.isEmpty) return all;
     return all
@@ -72,7 +82,7 @@ class SupabaseInboxRepository extends InboxRepository {
       final c = _known[conversationId];
       if (c == null || c.unread == 0) return;
       _known[conversationId] = c.copyWith(unread: 0);
-      _hasUnread = _known.values.any((c) => c.unread > 0);
+      _unreadMessages = _known.values.any((c) => c.unread > 0);
       notifyListeners();
     }, onError: (_) {
       // Stays unread; the next visit tries again.
@@ -88,7 +98,13 @@ class SupabaseInboxRepository extends InboxRepository {
   }
 
   @override
-  Future<List<ActivityItem>> activity(ActivityFilter filter) async => const [];
+  Future<List<ActivityItem>> activity(ActivityFilter filter) async {
+    final rows = await _client.rpc('get_activity') as List;
+    final items = [for (final r in rows) _activityItem(Map<String, dynamic>.from(r as Map))];
+    await _loadParties(items);
+    _markActivitySeen();
+    return items.where((a) => filter.includes(a.kind)).toList();
+  }
 
   @override
   Future<void> respondToInvite(ActivityItem item, {required bool accept}) => throw UnimplementedError('Invites are not connected yet');
@@ -96,31 +112,65 @@ class SupabaseInboxRepository extends InboxRepository {
   @override
   void clearCache() {
     _known.clear();
-    _hasUnread = false;
+    _unreadMessages = _unreadActivity = false;
     notifyListeners();
   }
 
-  /// Only notifies on a change, so screens that reload when notified don't loop.
-  void _setUnread(bool value) {
-    if (value == _hasUnread) return;
-    _hasUnread = value;
-    notifyListeners();
+  /// Only notifies when the dot changes, so screens that reload when notified don't loop.
+  void _setUnread({bool? messages, bool? activity}) {
+    final before = hasUnread;
+    _unreadMessages = messages ?? _unreadMessages;
+    _unreadActivity = activity ?? _unreadActivity;
+    if (hasUnread != before) notifyListeners();
   }
 
-  static ConversationSummary _summary(Map<String, dynamic> r, String? me) {
-    final other = Map<String, dynamic>.from(r['other'] as Map);
-    return ConversationSummary(
-      id: r['id'] as String,
-      other: FeedAuthor(
-        id: other['id'] as String,
-        username: other['username'] as String,
-        displayName: other['display_name'] as String?,
-        avatarUrl: other['avatar_url'] as String?,
-      ),
-      lastText: r['last_text'] as String,
-      lastFromMe: r['last_sender_id'] == me,
-      updatedAt: DateTime.parse(r['updated_at'] as String).toLocal(),
-      unread: (r['unread'] as num).toInt(),
-    );
+  /// Activity has been looked at: clears its part of the dot.
+  void _markActivitySeen() {
+    _client.rpc('mark_all_notifications_read').then((_) => _setUnread(activity: false), onError: (_) {
+      // Stays unread; the next visit tries again.
+    });
   }
+
+  /// Activity rows draw their Party and post from [FeedRepository]; loads the
+  /// Parties it doesn't have yet (or has without that post).
+  static Future<void> _loadParties(List<ActivityItem> items) async {
+    final feed = FeedRepository.instance;
+    final missing = <String>{
+      for (final a in items)
+        if (a.partyId != null && (feed.party(a.partyId!)?.posts.every((p) => p.id != a.postId) ?? true)) a.partyId!,
+    };
+    // A Party that fails to load just shows its row without a thumbnail.
+    await Future.wait([for (final id in missing) feed.loadParty(id).catchError((_) => null)]);
+  }
+
+  static FeedAuthor _author(Map r) => FeedAuthor(
+        id: r['id'] as String,
+        username: r['username'] as String,
+        displayName: r['display_name'] as String?,
+        avatarUrl: r['avatar_url'] as String?,
+      );
+
+  static ConversationSummary _summary(Map<String, dynamic> r, String? me) => ConversationSummary(
+        id: r['id'] as String,
+        other: _author(r['other'] as Map),
+        lastText: r['last_text'] as String,
+        lastFromMe: r['last_sender_id'] == me,
+        updatedAt: DateTime.parse(r['updated_at'] as String).toLocal(),
+        unread: (r['unread'] as num).toInt(),
+      );
+
+  /// Replies are shown like comments.
+  static ActivityItem _activityItem(Map<String, dynamic> r) => ActivityItem(
+        id: r['id'] as String,
+        kind: switch (r['type']) {
+          'like' => ActivityKind.like,
+          'follow' => ActivityKind.follow,
+          _ => ActivityKind.comment,
+        },
+        actor: _author(r['actor'] as Map),
+        partyId: r['party_id'] as String?,
+        postId: r['media_id'] as String?,
+        comment: r['comment'] as String?,
+        createdAt: DateTime.parse(r['created_at'] as String).toLocal(),
+      );
 }

@@ -17,6 +17,10 @@ abstract class InboxRepository extends ChangeNotifier {
   /// Unread messages or pending invites (for the nav badge).
   bool get hasUnread;
 
+  /// Asks the server whether there's anything unread, for the nav badge
+  /// before the Inbox has been opened. Never throws.
+  Future<void> refreshUnread() async {}
+
   Future<List<ConversationSummary>> conversations({String query = ''});
 
   ConversationSummary? conversation(String id);
