@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/inbox/inbox_models.dart';
@@ -27,16 +28,20 @@ class _ChatScreenState extends State<ChatScreen> {
   final _input = TextEditingController();
   List<ChatMessage>? _messages;
   bool _failed = false, _sending = false;
+  Timer? _poll;
 
   @override
   void initState() {
     super.initState();
     _input.addListener(() => setState(() {}));
     _load();
+    // Picks up replies while the conversation is open.
+    if (_repo.deliversMessages) _poll = Timer.periodic(const Duration(seconds: 5), (_) => _refresh());
   }
 
   @override
   void dispose() {
+    _poll?.cancel();
     _input.dispose();
     super.dispose();
   }
@@ -50,6 +55,19 @@ class _ChatScreenState extends State<ChatScreen> {
       _repo.markRead(widget.conversationId);
     } catch (_) {
       if (mounted) setState(() => _failed = true);
+    }
+  }
+
+  /// Quietly reloads; redraws only when a new message has arrived.
+  Future<void> _refresh() async {
+    if (_messages == null || _sending) return;
+    try {
+      final list = await _repo.messages(widget.conversationId);
+      if (!mounted || _sending || list.lastOrNull?.id == _messages?.lastOrNull?.id) return;
+      setState(() => _messages = list);
+      _repo.markRead(widget.conversationId);
+    } catch (_) {
+      // Tries again on the next tick.
     }
   }
 

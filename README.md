@@ -78,6 +78,9 @@ Run these SQL migrations in the Supabase SQL Editor, **in this order**:
 1. `supabase/migrations/000_core.sql`
 2. `supabase/migrations/114_new_ui.sql`
 3. `supabase/migrations/115_signup.sql`
+4. `supabase/migrations/116_sharing.sql`
+5. `supabase/migrations/117_avatars.sql`
+6. `supabase/migrations/118_chat.sql`
 
 > `109`–`113` are notes only and do not need to be run.
 

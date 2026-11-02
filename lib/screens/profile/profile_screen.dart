@@ -90,15 +90,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _message(UserProfile p) async {
     final messenger = ScaffoldMessenger.of(context);
-    final unavailable = context.l10n.messagesNotConnected;
+    final failed = context.l10n.chatOpenFailed;
     try {
       final id = await InboxRepository.instance.conversationWith(p.user);
       if (mounted) context.push('/chat/$id');
     } catch (_) {
-      // Messages aren't connected to the server yet.
+      // Blocked, or the network failed.
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(unavailable)));
+        ..showSnackBar(SnackBar(content: Text(failed)));
     }
   }
 

@@ -33,4 +33,7 @@ abstract class InboxRepository extends ChangeNotifier {
   Future<List<ActivityItem>> activity(ActivityFilter filter);
 
   Future<void> respondToInvite(ActivityItem item, {required bool accept});
+
+  /// Forgets loaded conversations after signing out or switching accounts.
+  void clearCache() {}
 }
